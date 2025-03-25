@@ -2,23 +2,13 @@ from PyQt6.QtWidgets import QWidget, QLabel, QGridLayout, QHBoxLayout, QVBoxLayo
 from PyQt6.QtGui import QPainter, QBrush, QPen, QColor, QPainterPath, QPixmap
 from PyQt6.QtCore import Qt, QRectF, QMarginsF, QObject
 
-import json
+import os, json
 
 from color_swatch import ColorSwatch
 
 class ProjectWidget(QWidget):
     def __init__(self, reference_image_file_path):
         super().__init__()
-        
-        self.pixmap = QPixmap(reference_image_file_path)
-
-        if self.pixmap.isNull():
-            QMessageBox.warning(self, "Error", "Failed to load image!")
-        else:
-            self.pixmap = self.pixmap  # Store original image
-
-        
-        
 
         grid_layout = QGridLayout()
 
@@ -33,7 +23,6 @@ class ProjectWidget(QWidget):
         grid_layout.addWidget(self.label, 1, 1)
 
         self.reference_label = QLabel()
-        self.reference_label.setPixmap(self.pixmap)
 
         grid_layout.addWidget(self.reference_label, 1, 1)
 
@@ -59,8 +48,7 @@ class ProjectWidget(QWidget):
         grid_layout.setAlignment(self.left_layout, Qt.AlignmentFlag.AlignTop)
 
         self.setLayout(grid_layout)
-
-        self.add_color_swatches()
+        self.set_reference_image_file_path(reference_image_file_path)
 
     def populate_color_swatches_layout(self, layout, num_color_swatches, alignment):
         """Populate left, right top or bottom layout with color swatches."""
@@ -90,6 +78,23 @@ class ProjectWidget(QWidget):
             self.populate_color_swatches_layout(self.bottom_layout, num_top_bottom, Qt.AlignmentFlag.AlignTop)
             self.populate_color_swatches_layout(self.left_layout, num_left_right, Qt.AlignmentFlag.AlignRight)
             self.populate_color_swatches_layout(self.right_layout, num_left_right, Qt.AlignmentFlag.AlignLeft)
+
+    def set_reference_image_file_path(self, reference_image_file_path):
+        """Set the reference image file path."""
+
+        if not os.path.exists(reference_image_file_path):
+            return
+
+        self.pixmap = QPixmap(reference_image_file_path)
+
+        if self.pixmap.isNull():
+            return
+        
+        self.pixmap = self.pixmap
+
+        self.reference_label.setPixmap(self.pixmap)
+
+        self.add_color_swatches()
 
     def to_dict(self):
         """Convert the properties to a dictionary."""
