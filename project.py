@@ -14,13 +14,14 @@ class Project(QObject):
 
         self.reference_image_file_path  = reference_image_file_path
         self.project_scene              = QGraphicsScene()
-        self.project_view               = ProjectView(self.project_scene)
-        self.project_widget             = ProjectWidget(reference_image_file_path)
+        self.project_widget             = ProjectWidget(reference_image_file_path, self)
+        self.project_view               = ProjectView(self.project_scene, self.project_widget)
         self.temp_dir_load              = tempfile.mkdtemp()
         self.temp_dir_save              = tempfile.mkdtemp()
 
         self.project_view.setScene(self.project_scene)
-        self.project_scene.addWidget(self.project_widget)
+        
+        self.widget_proxy = self.project_scene.addWidget(self.project_widget)
 
     def load(self, project_file_path):
         """Load project from disk."""
@@ -30,7 +31,7 @@ class Project(QObject):
                 zip_file.extractall(self.temp_dir_load)
             
             self.from_json_file(os.path.join(self.temp_dir_load, "Project.json"))
-            
+
             self.project_widget.set_reference_image_file_path(os.path.join(self.temp_dir_load, "Reference.jpg"))
 
             print(self.temp_dir_load)

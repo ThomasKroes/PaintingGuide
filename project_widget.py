@@ -7,10 +7,11 @@ import os, json
 from color_swatch import ColorSwatch
 
 class ProjectWidget(QWidget):
-    def __init__(self, reference_image_file_path):
+    def __init__(self, reference_image_file_path, project):
         super().__init__()
 
-        grid_layout = QGridLayout()
+        self.project    = project
+        grid_layout     = QGridLayout()
 
         grid_layout.setContentsMargins(10, 10, 10, 10)
         grid_layout.setSpacing(0)
@@ -95,16 +96,3 @@ class ProjectWidget(QWidget):
         self.reference_label.setPixmap(self.pixmap)
 
         self.add_color_swatches()
-
-    def to_dict(self):
-        """Convert the properties to a dictionary."""
-        
-        return {
-            "name": self.name,
-            "age": self.age
-        }
-
-    def to_json(self):
-        """Serialize the project to JSON."""
-
-        return json.dumps(self.to_dict(), indent=4)
