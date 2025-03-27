@@ -3,20 +3,21 @@ from PyQt6.QtGui import QWheelEvent, QMouseEvent, QBrush, QColor, QPainter, QPix
 from PyQt6.QtCore import Qt, QPointF, QRect
 
 from magic_lens_item import MagicLensItem
+from color_sample_item import ColorSampleItem
 
 class ProjectView(QGraphicsView):
-    def __init__(self, scene, project_widget):
-        super().__init__(scene)
+    def __init__(self, project):
+        super().__init__(project.scene)
         
         self.setDragMode(QGraphicsView.DragMode.NoDrag)
         self.setTransformationAnchor(QGraphicsView.ViewportAnchor.AnchorUnderMouse)
         self.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
         
-        self.project_widget         = project_widget
+        self.project                = project
         self.is_panning             = False
         self.pan_start_view_pos     = QPointF()
         self.zoom_factor            = 1.15
-        self.magnified_item         = None
+        self.magic_lens_item         = None
         self.magnification_factor   = 2
 
     def wheelEvent(self, event: QWheelEvent):
@@ -36,13 +37,17 @@ class ProjectView(QGraphicsView):
     def mousePressEvent(self, event: QMouseEvent):
         """ Start panning only if Alt key is pressed."""
 
-        if event.button() == Qt.MouseButton.LeftButton and QApplication.keyboardModifiers() & Qt.KeyboardModifier.AltModifier:
-            self.is_panning            = True
-            self.pan_start_view_pos    = event.position()
+        if event.button() == Qt.MouseButton.LeftButton:
+            if QApplication.keyboardModifiers() & Qt.KeyboardModifier.AltModifier:
+                self.is_panning            = True
+                self.pan_start_view_pos    = event.position()
 
-            self.setCursor(Qt.CursorShape.ClosedHandCursor)
-        else:
-            super().mousePressEvent(event)
+                self.setCursor(Qt.CursorShape.ClosedHandCursor)
+
+            if QApplication.keyboardModifiers() & Qt.KeyboardModifier.ControlModifier:
+                self.project.add_color_sample_from_scene_position(self.mapToScene(event.pos()).toPoint())
+
+        super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event: QMouseEvent):
         """ Pan the view when dragging with Alt key pressed."""
@@ -56,18 +61,20 @@ class ProjectView(QGraphicsView):
             self.verticalScrollBar().setValue(self.verticalScrollBar().value() - int(delta.y()))
         else:
 
-            if not self.project_widget.pixmap.isNull():
-                project_widget_proxy_local_pos = self.project_widget.project.widget_proxy.mapFromScene(self.mapToScene(event.pos()))
-                pixmap_position = self.project_widget.reference_label.mapFromParent(project_widget_proxy_local_pos)
+            # if self.project.reference_image:
+            #     project_widget_proxy_local_pos = self.widget.project.widget_proxy.mapFromScene(self.mapToScene(event.pos()))
+            #     pixmap_position = self.widget.reference_label.mapFromParent(project_widget_proxy_local_pos)
 
-                if self.magnified_item:
-                    self.scene().removeItem(self.magnified_item)
+                
 
-                self.magnified_item = MagicLensItem(event.position().toPoint(), self.project_widget.pixmap)
+            #     if self.magic_lens_item:
+            #         self.scene().removeItem(self.magic_lens_item)
 
-                self.scene().addItem(self.magnified_item)
+            #     self.magic_lens_item = MagicLensItem(self.project, pixmap_position)
 
-                self.update()
+            #     self.scene().addItem(self.magic_lens_item)
+
+            #     self.update()
 
             super().mouseMoveEvent(event)
 

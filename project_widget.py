@@ -2,9 +2,8 @@ from PyQt6.QtWidgets import QWidget, QLabel, QGridLayout, QHBoxLayout, QVBoxLayo
 from PyQt6.QtGui import QPainter, QBrush, QPen, QColor, QPainterPath, QPixmap
 from PyQt6.QtCore import Qt, QRectF, QMarginsF, QObject
 
-import os, json
-
 from color_swatch import ColorSwatch
+from reference_label import ReferenceLabel
 
 class ProjectWidget(QWidget):
     def __init__(self, reference_image_file_path, project):
@@ -15,17 +14,6 @@ class ProjectWidget(QWidget):
 
         grid_layout.setContentsMargins(10, 10, 10, 10)
         grid_layout.setSpacing(0)
-
-        self.label = QLabel(self)
-        
-        self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.label.setScaledContents(False)
-        
-        grid_layout.addWidget(self.label, 1, 1)
-
-        self.reference_label = QLabel()
-
-        grid_layout.addWidget(self.reference_label, 1, 1)
 
         self.top_layout     = QHBoxLayout()
         self.bottom_layout  = QHBoxLayout()
@@ -67,9 +55,9 @@ class ProjectWidget(QWidget):
     def add_color_swatches(self):
         """ Add color swatches around the reference image."""
 
-        if self.pixmap:
-            img_width   = self.pixmap.width()
-            img_height  = self.pixmap.height()
+        if self.project.reference_image:
+            img_width   = self.project.reference_image.width()
+            img_height  = self.project.reference_image.height()
             size        = ColorSwatch.size + ColorSwatch.spacing
 
             num_top_bottom = (img_width // size)
@@ -82,17 +70,5 @@ class ProjectWidget(QWidget):
 
     def set_reference_image_file_path(self, reference_image_file_path):
         """Set the reference image file path."""
-
-        if not os.path.exists(reference_image_file_path):
-            return
-
-        self.pixmap = QPixmap(reference_image_file_path)
-
-        if self.pixmap.isNull():
-            return
-        
-        self.pixmap = self.pixmap
-
-        self.reference_label.setPixmap(self.pixmap)
 
         self.add_color_swatches()

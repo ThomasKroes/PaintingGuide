@@ -1,27 +1,64 @@
-from PyQt6.QtWidgets import QLabel, QMessageBox, QGraphicsView, QGraphicsScene, QFileDialog, QApplication
+from PyQt6.QtWidgets import QLabel, QMessageBox, QGraphicsView, QGraphicsScene, QFileDialog, QApplication, QGraphicsGridLayout, QGraphicsLayoutItem, QGraphicsWidget
 from PyQt6.QtGui import QPainter, QBrush, QPen, QColor, QPainterPath, QPixmap
-from PyQt6.QtCore import Qt, QRectF, QMarginsF, QObject
+from PyQt6.QtCore import Qt, QRectF, QMarginsF, QObject, QPoint, QPointF, QSizeF
 
 import os, json, zipfile, tempfile, shutil
 
 from project_widget import ProjectWidget
 from project_view import ProjectView
-from project import *
+from reference_item import ReferenceItem
+from color_sample_item import ColorSampleItem
+from color_swatches import ColorSwatches
+from color_swatch import ColorSwatch
 
 class Project(QObject):
     def __init__(self, reference_image_file_path=""):
         super().__init__()
 
-        self.reference_image_file_path  = reference_image_file_path
-        self.project_scene              = QGraphicsScene()
-        self.project_widget             = ProjectWidget(reference_image_file_path, self)
-        self.project_view               = ProjectView(self.project_scene, self.project_widget)
+        self.reference_image            = None
+        self.reference_image_file_path  = ""
+        self.scene                      = QGraphicsScene()
+        self.view                       = ProjectView(self)
         self.temp_dir_load              = tempfile.mkdtemp()
         self.temp_dir_save              = tempfile.mkdtemp()
+        self.root_widget                = QGraphicsWidget()
+        self.grid_layout                = QGraphicsGridLayout()
+        self.reference_item             = ReferenceItem(self)
+        self.color_sample_items         = list()
+        self.color_swatches             = ColorSwatches(self)
 
-        self.project_view.setScene(self.project_scene)
+        self.grid_layout.setSpacing(0)
+        self.grid_layout.addItem(self.reference_item, 1, 1)
+        self.root_widget.setLayout(self.grid_layout)
+
+        self.scene.addItem(self.root_widget)
+
+        self.view.setScene(self.scene)
         
-        self.widget_proxy = self.project_scene.addWidget(self.project_widget)
+        self.load_reference_image(reference_image_file_path)
+
+    def load_reference_image(self, reference_image_file_path):
+        """ ."""
+
+        if not os.path.exists(reference_image_file_path):
+            return
+
+        self.reference_image_file_path = reference_image_file_path
+
+        self.reference_image = QPixmap(reference_image_file_path).toImage()
+
+        if self.reference_image.isNull():
+            raise RuntimeError("Reference image not valid")
+
+        reference_image_size = self.reference_image.size()
+
+        self.reference_item.resize(reference_image_size.width(), reference_image_size.height())
+
+        swatches_size = 4 * ColorSwatch.swatch_spacing + 2 * ColorSwatch.swatch_size 
+
+        self.root_widget.resize(reference_image_size.toSizeF() + QSizeF(swatches_size, swatches_size))
+
+        self.color_swatches.update()
 
     def load(self, project_file_path):
         """Load project from disk."""
@@ -32,11 +69,10 @@ class Project(QObject):
             
             self.from_json_file(os.path.join(self.temp_dir_load, "Project.json"))
 
-            self.project_widget.set_reference_image_file_path(os.path.join(self.temp_dir_load, "Reference.jpg"))
+            reference_image_file_path = os.path.join(self.temp_dir_load, "Reference.jpg")
 
-            print(self.temp_dir_load)
-            print(project_file_path)
-            print(os.listdir(self.temp_dir_load))
+            self.load_reference_image(reference_image_file_path)
+
         except FileNotFoundError:
             print(f"Error: The zip file { project_file_path } was not found.")
         except zipfile.BadZipFile:
@@ -64,17 +100,51 @@ class Project(QObject):
 
             QApplication.instance().settings.setValue("Directories/ProjectDir", os.path.dirname(project_file_path))
 
+    def add_color_sample_from_scene_position(self, scene_position : QPoint):
+        """Add color sample to the project."""
+        
+        if not self.reference_image:
+            return
+        
+        reference_position  = self.reference_item.mapFromScene(scene_position.toPointF()).toPoint()
+        color_sample_item   = ColorSampleItem(self, self.reference_image.pixelColor(reference_position), reference_position)
+        
+        self.add_color_sample(color_sample_item)
+
+    def add_color_sample(self, color_sample_item : ColorSampleItem):
+        """Add color sample to the project."""
+        
+        self.color_sample_items.append(color_sample_item)
+        self.scene.addItem(color_sample_item)
+
+        self.view.update()
+
     def to_dict(self):
         """Convert the project properties to a dictionary."""
 
+        color_samples = list()
+
+        for color_sample in self.color_sample_items:
+            color_samples.append(color_sample.to_dict())
+
+        print(color_samples)
+
         return {
-            "ReferenceImageFilePath": self.reference_image_file_path
+            "ReferenceImageFilePath": self.reference_image_file_path,
+            "ColorSamples": color_samples
         }
 
-    def from_json(self, json):
+    def from_dict(self, dict):
         """Serialize the project from JSON."""
 
-        self.reference_image_file_path = json["ReferenceImageFilePath"]
+        self.reference_image_file_path = dict["ReferenceImageFilePath"]
+
+        try:
+            for color_sample_dict in dict["ColorSamples"]:
+                self.add_color_sample(ColorSampleItem.from_dict(self, color_sample_dict))
+
+        except Exception as e:
+            print(f"Cannot load color samples from dictionary: {e}")
     
     def to_json(self):
         """Serialize the project to JSON."""
@@ -87,7 +157,7 @@ class Project(QObject):
         with open(project_json_file_path, 'r') as project_json_file:
             json_data = json.load(project_json_file)
 
-        self.from_json(json_data)
+        self.from_dict(json_data)
     
     def save_to_temp_file(self, filename="Project.json"):
         """Save JSON to a temporary directory with a custom filename."""

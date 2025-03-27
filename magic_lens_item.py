@@ -1,15 +1,16 @@
 import sys
+
 from PyQt6.QtCore import Qt, QPointF, QRect
 from PyQt6.QtGui import QPixmap, QPainter, QImage, QColor, QBrush
 from PyQt6.QtWidgets import QApplication, QGraphicsView, QGraphicsScene, QGraphicsWidget, QLabel, QGraphicsProxyWidget, QGraphicsItem
 from PyQt6.QtCore import Qt, QPointF, QRect, QRectF, QSize
 
 class MagicLensItem(QGraphicsItem):
-    def __init__(self, center, pixmap, magnification_factor=2, parent=None):
+    def __init__(self, project, center, magnification_factor=2, parent=None):
         super().__init__(parent)
 
+        self.project                = project
         self.center                 = center
-        self.pixmap                 = pixmap
         self.magnification_factor   = magnification_factor
         self.zoom_size              = 50
 
@@ -17,6 +18,10 @@ class MagicLensItem(QGraphicsItem):
         return QRectF(self.center.x() - 50, self.center.y() - 50, 100, 100)
 
     def paint(self, painter, option, widget):
+        if not self.project.reference_image:
+            return
+        
+        return
         # Extract the mouse position in the pixmap coordinates (scene coordinates)
         scene_pos = self.center
         mouse_x = int(scene_pos.x())
@@ -26,10 +31,10 @@ class MagicLensItem(QGraphicsItem):
         rect = QRect(mouse_x - self.zoom_size, mouse_y - self.zoom_size, 2 * self.zoom_size, 2 * self.zoom_size)
 
         # Ensure the rect stays within the pixmap's bounds
-        rect = rect.intersected(QRect(0, 0, self.pixmap.width(), self.pixmap.height()))
+        rect = rect.intersected(QRect(0, 0, self.project.pixmap.width(), self.project.pixmap.height()))
 
         # Convert pixmap to QImage to access pixel data
-        image = self.pixmap.toImage()
+        image = self.project.pixmap.toImage()
         cropped_image = image.copy(rect)
 
         # Scale the cropped area to create the zoom effect

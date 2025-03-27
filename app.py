@@ -74,7 +74,7 @@ class PaintingGuide(QMainWindow):
 
         self.projects.append(Project(reference_image_file_path))
 
-        self.tab_widget.addTab(self.projects[-1].project_view, os.path.basename(reference_image_file_path))
+        self.tab_widget.addTab(self.projects[-1].view, os.path.basename(reference_image_file_path))
 
     def open_project(self):
         """Open a project from disk."""
@@ -90,7 +90,7 @@ class PaintingGuide(QMainWindow):
 
             project.load(project_file_path)
 
-            self.tab_widget.addTab(project.project_view, os.path.basename(project.reference_image_file_path))
+            self.tab_widget.addTab(project.view, os.path.basename(project.reference_image_file_path))
 
     def save_project(self):
         """Saves the current project to disk."""
