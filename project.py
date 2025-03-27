@@ -52,7 +52,9 @@ class Project(QObject):
 
         reference_image_size = self.reference_image.size()
 
-        self.reference_item.resize(reference_image_size.width(), reference_image_size.height())
+        print(reference_image_size)
+
+        self.reference_item.set_fixed_size(reference_image_size.toSizeF())
 
         swatches_size = 4 * ColorSwatch.swatch_spacing + 2 * ColorSwatch.swatch_size 
 
@@ -106,10 +108,7 @@ class Project(QObject):
         if not self.reference_image:
             return
         
-        reference_position  = self.reference_item.mapFromScene(scene_position.toPointF()).toPoint()
-        color_sample_item   = ColorSampleItem(self, self.reference_image.pixelColor(reference_position), reference_position)
-        
-        self.add_color_sample(color_sample_item)
+        self.add_color_sample(ColorSampleItem(self, self.reference_image.pixelColor(scene_position), scene_position))
 
     def add_color_sample(self, color_sample_item : ColorSampleItem):
         """Add color sample to the project."""

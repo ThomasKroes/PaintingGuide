@@ -1,8 +1,9 @@
-from PyQt6.QtWidgets import QLabel, QGraphicsWidget
 from PyQt6.QtGui import QPainter, QBrush, QPen, QColor, QPainterPath
-from PyQt6.QtCore import Qt, QRectF, QMarginsF
+from PyQt6.QtCore import Qt, QRectF, QMarginsF, QSizeF
 
-class ColorSwatch(QGraphicsWidget):
+from graphics_widget import GraphicsWidget
+
+class ColorSwatch(GraphicsWidget):
     swatch_size             = 100
     swatch_spacing          = 20
     margin                  = 20
@@ -12,9 +13,7 @@ class ColorSwatch(QGraphicsWidget):
     def __init__(self):
         super().__init__()
 
-        self.resize(ColorSwatch.swatch_size, ColorSwatch.swatch_size)
-        self.setMinimumSize(ColorSwatch.swatch_size, ColorSwatch.swatch_size)
-        self.setMaximumSize(ColorSwatch.swatch_size, ColorSwatch.swatch_size)
+        self.set_fixed_size(QSizeF(ColorSwatch.swatch_size, ColorSwatch.swatch_size))
 
         self.is_active      = False
         self.sampled_color  = QColor(60, 60, 60)

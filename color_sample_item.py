@@ -8,8 +8,8 @@ def clamp(value, min_value, max_value):
     return max(min_value, min(value, max_value))
 
 class ColorSampleItem(QGraphicsEllipseItem):
-    radius              = 50
-    border_thickness    = 5
+    radius              = 40
+    border_thickness    = 4
     border_color        = ColorSwatch.border_color_active
 
     def __init__(self, project, color=QColor(), position=QPointF()):
@@ -21,42 +21,25 @@ class ColorSampleItem(QGraphicsEllipseItem):
 
         self.setBrush(QBrush())
         self.setPen(QPen(ColorSampleItem.border_color, ColorSampleItem.border_thickness))
-        # self.setPos(position.toPointF())
-        self.setRect(position.x(), position.y(), ColorSampleItem.radius, ColorSampleItem.radius)
+        self.setRect(position.x() - ColorSampleItem.radius / 2, position.y() - ColorSampleItem.radius / 2, ColorSampleItem.radius, ColorSampleItem.radius)
         self.setFlag(QGraphicsEllipseItem.GraphicsItemFlag.ItemIsMovable)
         self.setFlag(QGraphicsEllipseItem.GraphicsItemFlag.ItemIsSelectable)
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemSendsGeometryChanges)
     
         self.update()
-
-        print(position)
     
     def update(self):
-        """"""
+        """Update tge """
 
         scene_pos       = self.mapToScene(self.rect().center())
-        reference_pos   = self.project.reference_item.mapFromScene(scene_pos)
-        pixel_color     = self.project.reference_image.pixelColor(reference_pos.toPoint())
+        self.position   = self.project.reference_item.mapFromScene(scene_pos)
+        self.color      = self.project.reference_image.pixelColor(self.position.toPoint())
         
-        self.setBrush(QBrush(pixel_color))
+        self.setBrush(QBrush(self.color))
 
     def itemChange(self, change, value):
         if change == QGraphicsEllipseItem.GraphicsItemChange.ItemPositionChange:
             self.update()
-            # new_pos = value  # Proposed new position
-
-            # # Map the new position to the proxy widget's local coordinates
-            # local_pos = self.project.widget_proxy.mapFromScene(new_pos)
-
-            # # Get the bounding rect of the widget inside the QGraphicsProxyWidget
-            # widget_rect = self.project.widget.reference_label.geometry()
-
-            # # Clamp the x and y position within the widget's rect
-            # x = min(max(local_pos.x(), 0), widget_rect.width() - self.rect().width())
-            # y = min(max(local_pos.y(), 0), widget_rect.height() - self.rect().height())
-
-            # # Map the clamped position back to the scene coordinates
-            # return self.project.widget_proxy.mapToScene(QPointF(x, y))
 
         return super().itemChange(change, value)
    
