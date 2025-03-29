@@ -2,7 +2,7 @@ from PyQt6.QtWidgets import QWidget, QLabel, QGridLayout, QHBoxLayout, QVBoxLayo
 from PyQt6.QtGui import QPainter, QBrush, QPen, QColor, QPainterPath, QPixmap
 from PyQt6.QtCore import Qt, QRectF, QMarginsF, QObject
 
-from color_swatch import ColorSwatch
+from color_swatch_item import ColorSwatchItem
 from reference_label import ReferenceLabel
 
 class ProjectWidget(QWidget):
@@ -31,8 +31,8 @@ class ProjectWidget(QWidget):
         grid_layout.setColumnStretch(2, 1)
 
         for border_layout in self.border_layouts:
-            border_layout.setSpacing(ColorSwatch.spacing)
-            border_layout.setContentsMargins(ColorSwatch.margin, ColorSwatch.margin, ColorSwatch.margin, ColorSwatch.margin)
+            border_layout.setSpacing(ColorSwatchItem.spacing)
+            border_layout.setContentsMargins(ColorSwatchItem.margin, ColorSwatchItem.margin, ColorSwatchItem.margin, ColorSwatchItem.margin)
 
         grid_layout.setAlignment(self.left_layout, Qt.AlignmentFlag.AlignTop)
 
@@ -45,7 +45,7 @@ class ProjectWidget(QWidget):
         layout.addStretch(1)
 
         for i in range(num_color_swatches):
-            color_swatch = ColorSwatch()
+            color_swatch = ColorSwatchItem()
 
             layout.addWidget(color_swatch)
             layout.setAlignment(color_swatch, alignment)
@@ -58,7 +58,7 @@ class ProjectWidget(QWidget):
         if self.project.reference_image:
             img_width   = self.project.reference_image.width()
             img_height  = self.project.reference_image.height()
-            size        = ColorSwatch.size + ColorSwatch.spacing
+            size        = ColorSwatchItem.size + ColorSwatchItem.spacing
 
             num_top_bottom = (img_width // size)
             num_left_right = (img_height // size)

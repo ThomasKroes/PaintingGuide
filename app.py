@@ -1,10 +1,13 @@
 import sys
 import os
+
 from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QFileDialog, QMessageBox, QGridLayout, QHBoxLayout, QVBoxLayout, QWidget, QSpacerItem, QSizePolicy, QTabWidget 
 from PyQt6.QtGui import QAction, QPixmap, QColor
 from PyQt6.QtCore import Qt, QSettings, QSize
 
-from color_swatch import ColorSwatch
+import qtawesome as qta
+
+from color_swatch_item import ColorSwatchItem
 from project import Project
 
 class PaintingGuide(QMainWindow):
@@ -25,9 +28,9 @@ class PaintingGuide(QMainWindow):
         self.projects   = []
 
         self.create_menu_bar()   
-        self.update_save_project_action_read_only()
+        self.update_actions_read_only()
 
-        self.tab_widget.currentChanged.connect(self.update_save_project_action_read_only)
+        self.tab_widget.currentChanged.connect(self.update_actions_read_only)
 
     def create_menu_bar(self):
         """Creates the main menu bar."""
@@ -38,26 +41,50 @@ class PaintingGuide(QMainWindow):
         
         self.import_reference_image_action = QAction("Import reference image", self)
         self.import_reference_image_action.triggered.connect(self.import_reference_image)
+        self.import_reference_image_action.setIcon(qta.icon("fa5s.file-import"))
 
         file_menu.addAction(self.import_reference_image_action)
 
         file_menu.addSeparator()
 
         self.open_project_action = QAction("Open project", self)
+        self.open_project_action.setIcon(qta.icon("fa5s.folder-open"))
         self.open_project_action.triggered.connect(self.open_project)
 
         file_menu.addAction(self.open_project_action)
 
         self.save_project_action = QAction("Save project", self)
+        self.save_project_action.setIcon(qta.icon("fa5s.save"))
         self.save_project_action.triggered.connect(self.save_project)
 
         file_menu.addAction(self.save_project_action)
 
+        self.save_project_as_action = QAction("Save project as...", self)
+        self.save_project_as_action.setIcon(qta.icon("fa5s.save"))
+        self.save_project_as_action.triggered.connect(self.save_project_as)
+
+        file_menu.addAction(self.save_project_as_action)
+
+        file_menu.addSeparator()
+
+        self.export_project_to_image_action = QAction("Export project", self)
+        self.export_project_to_image_action.setIcon(qta.icon("fa5s.file-export"))
+        self.export_project_to_image_action.triggered.connect(self.export_project_to_image)
+
+        file_menu.addAction(self.export_project_to_image_action)
+
+        self.export_project_to_image_as_action = QAction("Export project as...", self)
+        self.export_project_to_image_as_action.setIcon(qta.icon("fa5s.file-export"))
+        self.export_project_to_image_as_action.triggered.connect(self.export_project_to_image_as)
+
+        file_menu.addAction(self.export_project_to_image_as_action)
+
         file_menu.addSeparator()
 
         self.exit_action = QAction("Exit", self)
+        self.exit_action.setIcon(qta.icon("fa5s.sign-out-alt"))
         self.exit_action.triggered.connect(self.close)
-        
+
         file_menu.addAction(self.exit_action)
 
     def import_reference_image(self):
@@ -98,10 +125,31 @@ class PaintingGuide(QMainWindow):
         if self.tab_widget.currentIndex() >= 0:
             self.projects[self.tab_widget.currentIndex()].save()
 
-    def update_save_project_action_read_only(self):
-        """Updates the read-only state of the save project action"""
+    def save_project_as(self):
+        """Saves the current project to disk in a picked location."""
+
+        if self.tab_widget.currentIndex() >= 0:
+            self.projects[self.tab_widget.currentIndex()].save_as()
+
+    def export_project_to_image(self):
+        """Exports the current project to an image file."""
+
+        if self.tab_widget.currentIndex() >= 0:
+            self.projects[self.tab_widget.currentIndex()].export_to_image()
+
+    def export_project_to_image_as(self):
+        """Exports the current project to an image file in a picked location."""
+
+        if self.tab_widget.currentIndex() >= 0:
+            self.projects[self.tab_widget.currentIndex()].export_to_image_as()
+
+    def update_actions_read_only(self):
+        """Updates the read-only state of various actions."""
 
         self.save_project_action.setEnabled(self.tab_widget.currentIndex() >= 0)
+        self.save_project_as_action.setEnabled(self.tab_widget.currentIndex() >= 0)
+        self.export_project_to_image_action.setEnabled(self.tab_widget.currentIndex() >= 0)
+        self.export_project_to_image_as_action.setEnabled(self.tab_widget.currentIndex() >= 0)
     
     def close_tab(self, index):
         """Remove tab when close button is clicked."""

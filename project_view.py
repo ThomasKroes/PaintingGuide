@@ -4,6 +4,8 @@ from PyQt6.QtCore import Qt, QPointF, QRect
 
 from magic_lens_item import MagicLensItem
 from color_sample_item import ColorSampleItem
+from view_context_menu import ViewContextMenu
+from common import *
 
 class ProjectView(QGraphicsView):
     def __init__(self, project):
@@ -13,13 +15,18 @@ class ProjectView(QGraphicsView):
         self.setTransformationAnchor(QGraphicsView.ViewportAnchor.AnchorUnderMouse)
         self.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
         self.setRenderHint(QPainter.RenderHint.Antialiasing)
+        self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         
+        self.customContextMenuRequested.connect(self.show_context_menu)
+
         self.project                = project
         self.is_panning             = False
         self.pan_start_view_pos     = QPointF()
         self.zoom_factor            = 1.15
-        self.magic_lens_item         = None
+        self.magic_lens_item        = None
         self.magnification_factor   = 2
+
+        self.set_background_color(QColor(25, 25, 25))
 
     def wheelEvent(self, event: QWheelEvent):
         """ Zoom in/out when scrolling the mouse wheel"""
@@ -88,16 +95,26 @@ class ProjectView(QGraphicsView):
         else:
             super().mouseReleaseEvent(event)
 
+    def show_context_menu(self, pos):
+        """Display a context menu at the cursor position."""
 
+        view_context_menu = ViewContextMenu(self.project)
 
-# # --- Example Usage ---
-# app = QApplication([])
+        view_context_menu.exec(self.mapToGlobal(pos))
 
-# scene = QGraphicsScene()
-# scene.addText("Zoom & Pan with Middle Mouse + Scroll")  # Add something to see
+    def set_background_color(self, background_color : QColor):
+        """Set background color of the view."""
 
-# view = PannableZoomableView(scene)
-# view.setSceneRect(0, 0, 800, 600)  # Define scene size
-# view.show()
+        self.setBackgroundBrush(background_color)
 
-# app.exec()
+    def to_dict(self):
+        """Convert the reference item properties to a dictionary."""
+
+        return {
+            "BackgroundColor": color_to_dict(self.background_color),
+        }
+
+    def from_dict(self, dict):
+        """Serialize the reference item from JSON."""
+
+        self.background_color = color_from_dict(dict["BackgroundColor"])

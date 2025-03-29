@@ -1,15 +1,15 @@
 from PyQt6.QtWidgets import QLabel, QMessageBox, QGraphicsView, QGraphicsScene, QFileDialog, QApplication, QGraphicsGridLayout, QGraphicsLayoutItem, QGraphicsWidget
-from PyQt6.QtGui import QPainter, QBrush, QPen, QColor, QPainterPath, QPixmap
+from PyQt6.QtGui import QPainter, QBrush, QPen, QColor, QPainterPath, QPixmap, QImage
 from PyQt6.QtCore import Qt, QRectF, QMarginsF, QObject, QPoint, QPointF, QSizeF
 
-import os, json, zipfile, tempfile, shutil
+import os, json, zipfile, tempfile, shutil, traceback
 
 from project_widget import ProjectWidget
 from project_view import ProjectView
 from reference_item import ReferenceItem
 from color_sample_item import ColorSampleItem
 from color_swatches import ColorSwatches
-from color_swatch import ColorSwatch
+from color_swatch_item import ColorSwatchItem
 
 class Project(QObject):
     def __init__(self, reference_image_file_path=""):
@@ -26,6 +26,9 @@ class Project(QObject):
         self.reference_item             = ReferenceItem(self)
         self.color_sample_items         = list()
         self.color_swatches             = ColorSwatches(self)
+        self.file_path                  = ""
+        self.export_image_file_path     = ""
+        self.color_dialog               = None
 
         self.grid_layout.setSpacing(0)
         self.grid_layout.addItem(self.reference_item, 1, 1)
@@ -52,21 +55,21 @@ class Project(QObject):
 
         reference_image_size = self.reference_image.size()
 
-        print(reference_image_size)
-
         self.reference_item.set_fixed_size(reference_image_size.toSizeF())
 
-        swatches_size = 4 * ColorSwatch.swatch_spacing + 2 * ColorSwatch.swatch_size 
+        swatches_size = 4 * ColorSwatchItem.swatch_spacing + 2 * ColorSwatchItem.swatch_size 
 
         self.root_widget.resize(reference_image_size.toSizeF() + QSizeF(swatches_size, swatches_size))
 
         self.color_swatches.update()
 
-    def load(self, project_file_path):
+    def load(self, file_path):
         """Load project from disk."""
 
         try:
-            with zipfile.ZipFile(project_file_path, 'r') as zip_file:
+            print(f"Load project from: { file_path }")
+
+            with zipfile.ZipFile(file_path, 'r') as zip_file:
                 zip_file.extractall(self.temp_dir_load)
             
             self.from_json_file(os.path.join(self.temp_dir_load, "Project.json"))
@@ -75,19 +78,23 @@ class Project(QObject):
 
             self.load_reference_image(reference_image_file_path)
 
+            self.file_path = file_path
         except FileNotFoundError:
-            print(f"Error: The zip file { project_file_path } was not found.")
+            print(f"Error: The zip file { file_path } was not found.")
         except zipfile.BadZipFile:
-            print(f"Error: The file { project_file_path } is not a valid zip file.")
+            print(f"Error: The file { file_path } is not a valid zip file.")
         except Exception as e:
             print(f"An unexpected error occurred: {e}")
     
-    def save(self):
-        """Save project to disk."""
+    def save(self, file_path="", choose_location=False):
+        """Save to disk (ask for location if file_path is empty)."""
 
-        last_project_dir = QApplication.instance().settings.value("Directories/ProjectDir")
+        if choose_location or not self.file_path:
+            last_project_dir = QApplication.instance().settings.value("Directories/ProjectDir")
 
-        project_file_path, _ = QFileDialog.getSaveFileName(None, "Save project", last_project_dir, "Painting Guide Project (*.pgp)")
+            self.file_path, _ = QFileDialog.getSaveFileName(None, "Save project", last_project_dir, "Painting Guide Project (*.pgp)")
+
+        print(f"Save project to: { self.file_path }")
 
         shutil.copy(self.reference_image_file_path, os.path.join(self.temp_dir_save, "Reference.jpg"))
 
@@ -95,12 +102,46 @@ class Project(QObject):
 
         zip_input_file_paths = ["Reference.jpg", "Project.json"]
 
-        if project_file_path:
-            with zipfile.ZipFile(project_file_path, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+        if self.file_path:
+            with zipfile.ZipFile(self.file_path, 'w', zipfile.ZIP_DEFLATED) as zip_file:
                 for zip_input_file_name in zip_input_file_paths:
                     zip_file.write(os.path.join(self.temp_dir_save, zip_input_file_name), arcname=os.path.basename(zip_input_file_name))
 
-            QApplication.instance().settings.setValue("Directories/ProjectDir", os.path.dirname(project_file_path))
+            QApplication.instance().settings.setValue("Directories/ProjectDir", os.path.dirname(self.file_path))
+
+    def save_as(self):
+        """Save to disk in a picked location."""
+
+        self.save("", True)
+
+    def export_to_image(self, file_path="", choose_location=False):
+        """Export to image (ask for location if file_path is empty)."""
+
+        if choose_location or not self.export_image_file_path:
+            last_export_dir = QApplication.instance().settings.value("Directories/Export")
+
+            self.export_image_file_path, _ = QFileDialog.getSaveFileName(None, "Export to image", last_export_dir, "Image (*.png)")
+
+        print(f"Export image to: { self.export_image_file_path }")
+
+        if self.export_image_file_path:
+            scene_rect = self.scene.itemsBoundingRect()
+
+            image = QImage(scene_rect.size().toSize(), QImage.Format.Format_ARGB32)
+            image.fill(0) 
+
+            painter = QPainter(image)
+            self.scene.render(painter, target=scene_rect)
+            painter.end()
+
+            image.save(self.export_image_file_path)
+
+            QApplication.instance().settings.setValue("Directories/Export", os.path.dirname(self.export_image_file_path))
+
+    def export_to_image_as(self):
+        """Export to image in a picked location."""
+
+        self.export_to_image("", True)
 
     def add_color_sample_from_scene_position(self, scene_position : QPoint):
         """Add color sample to the project."""
@@ -108,7 +149,7 @@ class Project(QObject):
         if not self.reference_image:
             return
         
-        self.add_color_sample(ColorSampleItem(self, self.reference_image.pixelColor(scene_position), scene_position))
+        self.add_color_sample(ColorSampleItem(self, scene_position))
 
     def add_color_sample(self, color_sample_item : ColorSampleItem):
         """Add color sample to the project."""
@@ -126,8 +167,6 @@ class Project(QObject):
         for color_sample in self.color_sample_items:
             color_samples.append(color_sample.to_dict())
 
-        print(color_samples)
-
         return {
             "ReferenceImageFilePath": self.reference_image_file_path,
             "ColorSamples": color_samples
@@ -144,7 +183,8 @@ class Project(QObject):
 
         except Exception as e:
             print(f"Cannot load color samples from dictionary: {e}")
-    
+            traceback.print_exc()
+
     def to_json(self):
         """Serialize the project to JSON."""
         
