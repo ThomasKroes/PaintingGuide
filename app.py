@@ -1,7 +1,7 @@
 import sys
 import os
 
-from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QFileDialog, QMessageBox, QGridLayout, QHBoxLayout, QVBoxLayout, QWidget, QSpacerItem, QSizePolicy, QTabWidget 
+from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QFileDialog, QMessageBox, QGridLayout, QHBoxLayout, QVBoxLayout, QWidget, QSpacerItem, QSizePolicy, QTabWidget, QToolBar
 from PyQt6.QtGui import QAction, QPixmap, QColor
 from PyQt6.QtCore import Qt, QSettings, QSize
 
@@ -86,6 +86,15 @@ class PaintingGuide(QMainWindow):
         self.exit_action.triggered.connect(self.close)
 
         file_menu.addAction(self.exit_action)
+
+        self.toolbar = QToolBar("Tools")
+
+        # self.addToolBar(self.toolbar)
+
+        # # Add color picker action
+        # color_action = QAction(QIcon(), "Pick Color", self)
+        # color_action.triggered.connect(self.pick_color)
+        # self.toolbar.addAction(color_action)
 
     def import_reference_image(self):
         file_path, _ = QFileDialog.getOpenFileName(self, "Open Image", app.settings.value("Directories/ReferenceImageDir", os.path.expanduser("~")), "Images (*.jpg *.jpeg *.png *.bmp)")
@@ -186,6 +195,7 @@ class PaintingGuide(QMainWindow):
 if __name__ == "__main__":
     app     = QApplication(sys.argv)
 
+    app.setWindowIcon((qta.icon("fa5s.palette")))
     app.settings = QSettings("Kroes", "Paint guide")
 
     window  = PaintingGuide()

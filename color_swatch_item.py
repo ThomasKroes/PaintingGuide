@@ -53,8 +53,8 @@ class ColorSwatchItem(GraphicsWidget):
     def __del__(self):
         """Remove item from tracking when deleted."""
 
-        if self in ColorSwatchItem.items:
-            ColorSwatchItem.items.remove(self)
+        if self.color_sample_item:
+            self.color_sample_item.disconnect_from_color_swatch_item()
 
     def connect_to_color_sample_item(self, color_sample_item):
         """Connect to color sample item."""

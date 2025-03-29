@@ -1,3 +1,5 @@
+import traceback
+
 from PyQt6.QtWidgets import QLabel, QGraphicsEllipseItem, QGraphicsItem, QGraphicsLineItem, QApplication
 from PyQt6.QtGui import QPainter, QBrush, QPen, QColor, QPainterPath, QVector2D, QPalette
 from PyQt6.QtCore import Qt, QRectF, QMarginsF, QObject, QPoint, QSizeF, QPointF, QLineF, QTimer
@@ -36,13 +38,14 @@ class ColorSampleItem(QGraphicsEllipseItem):
         super().__init__()
         
         ColorSampleItem.items.append(self)
-
+        
         self.project                = project
         self.color_swatch_item      = None
         self.link_item              = LinkItem()
         self.anchor_position_scene  = QPointF()
 
         self.project.scene.addItem(self.link_item)
+        self.project.scene.addItem(self)
 
         self.setPen(QPen(QApplication.instance().palette().color(QPalette.ColorGroup.Normal, QPalette.ColorRole.Text), ColorSampleItem.border_thickness))
         self.setRect(position.x() - ColorSampleItem.radius / 2, position.y() - ColorSampleItem.radius / 2, ColorSampleItem.radius, ColorSampleItem.radius)
@@ -64,7 +67,7 @@ class ColorSampleItem(QGraphicsEllipseItem):
         """Update tge """
 
         sample_color = Qt.GlobalColor.black
-        
+
         if self.project.reference_image:
             scene_pos           = self.mapToScene(self.rect().center())
             reference_position  = self.project.reference_item.mapFromScene(scene_pos)
@@ -89,16 +92,12 @@ class ColorSampleItem(QGraphicsEllipseItem):
             links = list()
 
             for color_swatch_item in [item for item in ColorSwatchItem.items if not item.color_sample_item]:
-                # print(color_swatch_item.anchor_position_scene)
                 links.append(Link(color_sample_item, color_swatch_item))
 
             if not links:
                 continue
 
             links.sort(key=lambda item: item.distance)
-
-            # for l in links:
-            #     print(l.distance)
 
             color_sample_item.connect_to_color_swatch_item(links[0].color_swatch_item)
 
@@ -112,6 +111,11 @@ class ColorSampleItem(QGraphicsEllipseItem):
         self.color_swatch_item.sample_color = self.brush().color()
 
         self.link_item.setLine(QLineF(self.anchor_position_scene, self.color_swatch_item.anchor_position_scene))
+
+    def disconnect_from_color_swatch_item(self):
+        """Disconnect from color swatch item."""
+
+        self.color_swatch_item = None
 
     def itemChange(self, change, value):
         if change == QGraphicsEllipseItem.GraphicsItemChange.ItemVisibleHasChanged:
@@ -140,12 +144,21 @@ class ColorSampleItem(QGraphicsEllipseItem):
         }
     
     @staticmethod
-    def from_dict(project, dict):
-        """Create color sample item from dictionary."""
+    def create_from_scene_position(project, scene_position : QPointF):
+        """Create a color sample from scene position."""
 
-        return ColorSampleItem(project, QPointF(dict["Position"]["X"], dict["Position"]["Y"]))
         try:
-            print(dict)
-            return ColorSampleItem(project, QPointF(dict["Position"]["X"], dict["Position"]["Y"]))
+            ColorSampleItem(project, scene_position)
         except Exception as e:
-            print(f"Cannot initialize color sample from dictionary: {e}")
+            print(f"Cannot create color sample item from scene position: {e}")
+            traceback.print_exc()
+    
+    @staticmethod
+    def create_from_dict(project, dict : dict):
+        """Create a color sample from dictionary."""
+
+        try:
+            ColorSampleItem.create_from_scene_position(project, QPointF(dict["Position"]["X"], dict["Position"]["Y"]))
+        except Exception as e:
+            print(f"Cannot create color sample item from dictionary: {e}")
+            traceback.print_exc()

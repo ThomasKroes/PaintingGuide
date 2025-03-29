@@ -53,7 +53,7 @@ class ProjectView(QGraphicsView):
                 self.setCursor(Qt.CursorShape.ClosedHandCursor)
 
             if QApplication.keyboardModifiers() & Qt.KeyboardModifier.ControlModifier:
-                self.project.add_color_sample_from_scene_position(self.mapToScene(event.pos()).toPoint())
+                ColorSampleItem.create_from_scene_position(self.project, self.mapToScene(event.pos()).toPoint())
 
         super().mousePressEvent(event)
 

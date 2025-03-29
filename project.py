@@ -4,12 +4,12 @@ from PyQt6.QtCore import Qt, QRectF, QMarginsF, QObject, QPoint, QPointF, QSizeF
 
 import os, json, zipfile, tempfile, shutil, traceback
 
-from project_widget import ProjectWidget
 from project_view import ProjectView
 from reference_item import ReferenceItem
-from color_sample_item import ColorSampleItem
 from color_swatches import ColorSwatches
 from color_swatch_item import ColorSwatchItem
+from color_samples import ColorSamples
+from color_sample_item import ColorSampleItem
 
 class Project(QObject):
     def __init__(self, reference_image_file_path=""):
@@ -24,8 +24,8 @@ class Project(QObject):
         self.root_widget                = QGraphicsWidget()
         self.grid_layout                = QGraphicsGridLayout()
         self.reference_item             = ReferenceItem(self)
-        self.color_sample_items         = list()
         self.color_swatches             = ColorSwatches(self)
+        self.color_samples              = ColorSamples(self)
         self.file_path                  = ""
         self.export_image_file_path     = ""
         self.color_dialog               = None
@@ -128,7 +128,7 @@ class Project(QObject):
             scene_rect = self.scene.itemsBoundingRect()
 
             image = QImage(scene_rect.size().toSize(), QImage.Format.Format_ARGB32)
-            image.fill(0) 
+            image.fill(self.view.backgroundBrush().color()) 
 
             painter = QPainter(image)
             self.scene.render(painter, target=scene_rect)
@@ -143,46 +143,28 @@ class Project(QObject):
 
         self.export_to_image("", True)
 
-    def add_color_sample_from_scene_position(self, scene_position : QPoint):
-        """Add color sample to the project."""
-        
-        if not self.reference_image:
-            return
-        
-        self.add_color_sample(ColorSampleItem(self, scene_position))
-
-    def add_color_sample(self, color_sample_item : ColorSampleItem):
-        """Add color sample to the project."""
-        
-        self.color_sample_items.append(color_sample_item)
-        self.scene.addItem(color_sample_item)
-
-        self.view.update()
-
-    def to_dict(self):
-        """Convert the project properties to a dictionary."""
-
-        color_samples = list()
-
-        for color_sample in self.color_sample_items:
-            color_samples.append(color_sample.to_dict())
-
-        return {
-            "ReferenceImageFilePath": self.reference_image_file_path,
-            "ColorSamples": color_samples
-        }
-
-    def from_dict(self, dict):
-        """Serialize the project from JSON."""
-
-        self.reference_image_file_path = dict["ReferenceImageFilePath"]
+    def save_to_dict(self, dict : dict):
+        """Save in dictionary."""
 
         try:
-            for color_sample_dict in dict["ColorSamples"]:
-                self.add_color_sample(ColorSampleItem.from_dict(self, color_sample_dict))
+            dict["ReferenceImageFilePath"] = self.reference_image_file_path
 
+            self.color_swatches.save_to_dict(dict)
+            self.color_samples.save_to_dict(dict)
         except Exception as e:
-            print(f"Cannot load color samples from dictionary: {e}")
+            print(f"Cannot save project to dictionary: {e}")
+            traceback.print_exc()
+        
+    def load_from_dict(self, dict : dict):
+        """Load from dictionary."""
+
+        try:
+            self.reference_image_file_path = dict["ReferenceImageFilePath"]
+
+            self.color_swatches.load_from_dict(dict)
+            self.color_samples.load_from_dict(dict)
+        except Exception as e:
+            print(f"Cannot load project from dictionary: {e}")
             traceback.print_exc()
 
     def to_json(self):
@@ -196,7 +178,7 @@ class Project(QObject):
         with open(project_json_file_path, 'r') as project_json_file:
             json_data = json.load(project_json_file)
 
-        self.from_dict(json_data)
+        self.load_from_dict(json_data)
     
     def save_to_temp_file(self, filename="Project.json"):
         """Save JSON to a temporary directory with a custom filename."""
