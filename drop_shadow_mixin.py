@@ -2,15 +2,13 @@ from PyQt6.QtWidgets import QLabel, QGraphicsWidget, QGraphicsItem, QGraphicsDro
 from PyQt6.QtGui import QPainter, QBrush, QPen, QColor, QPainterPath, QPixmap
 from PyQt6.QtCore import Qt, QRectF, QMarginsF, QObject, QPoint, QSizeF, QPointF
 
-class GraphicsWidget(QGraphicsWidget):
+class DropShadowMixin():
     def __init__(self):
         super().__init__()
 
-    def set_fixed_size(self, size : QSizeF):
-        """Set fixed size."""
+        shadow = QGraphicsDropShadowEffect()
+        shadow.setBlurRadius(7)
+        shadow.setOffset(7, 7)
+        shadow.setColor(QColor(0, 0, 0, 100))
 
-        self.resize(size)
-        self.setMinimumSize(size)
-        self.setMaximumSize(size)
-   
-    
+        self.setGraphicsEffect(shadow)

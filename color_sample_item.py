@@ -5,6 +5,8 @@ from PyQt6.QtGui import QPainter, QBrush, QPen, QColor, QPainterPath, QVector2D,
 from PyQt6.QtCore import Qt, QRectF, QMarginsF, QObject, QPoint, QSizeF, QPointF, QLineF, QTimer
 
 from color_swatch_item import ColorSwatchItem
+from color_sample_link_item import ColorSampleLinkItem
+from drop_shadow_mixin import DropShadowMixin
 
 def clamp(value, min_value, max_value):
     return max(min_value, min(value, max_value))
@@ -19,15 +21,6 @@ class Link(QObject):
         self.color_swatch_center    = QVector2D(self.color_swatch_item.anchor_position_scene)
         self.distance               = (self.color_sample_center - self.color_swatch_center).length()
 
-class LinkItem(QGraphicsLineItem):
-    border_thickness    = 4
-    border_color        = ColorSwatchItem.border_color_active
-
-    def __init__(self):
-        super().__init__()
-
-        self.setPen(QPen(ColorSampleItem.border_color, ColorSampleItem.border_thickness))
-
 class ColorSampleItem(QGraphicsEllipseItem):
     radius              = 40
     border_thickness    = 4
@@ -38,10 +31,10 @@ class ColorSampleItem(QGraphicsEllipseItem):
         super().__init__()
         
         ColorSampleItem.items.append(self)
-        
+
         self.project                = project
         self.color_swatch_item      = None
-        self.link_item              = LinkItem()
+        self.link_item              = ColorSampleLinkItem(self)
         self.anchor_position_scene  = QPointF()
 
         self.project.scene.addItem(self.link_item)
@@ -110,7 +103,13 @@ class ColorSampleItem(QGraphicsEllipseItem):
 
         self.color_swatch_item.sample_color = self.brush().color()
 
-        self.link_item.setLine(QLineF(self.anchor_position_scene, self.color_swatch_item.anchor_position_scene))
+        
+        line = QLineF(self.anchor_position_scene, self.color_swatch_item.anchor_position_scene)
+
+        if line is not self.link_item.line():
+            # self.link_item.fade_out()
+            self.link_item.setLine(line)
+            # self.link_item.fade_in()
 
     def disconnect_from_color_swatch_item(self):
         """Disconnect from color swatch item."""
