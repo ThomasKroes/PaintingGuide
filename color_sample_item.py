@@ -11,16 +11,6 @@ from drop_shadow_mixin import DropShadowMixin
 def clamp(value, min_value, max_value):
     return max(min_value, min(value, max_value))
 
-class Link(QObject):
-    def __init__(self, color_sample_item, color_swatch_item):
-        super().__init__()
-
-        self.color_sample_item      = color_sample_item
-        self.color_swatch_item      = color_swatch_item
-        self.color_sample_center    = QVector2D(self.color_sample_item.anchor_position_scene)
-        self.color_swatch_center    = QVector2D(self.color_swatch_item.anchor_position_scene)
-        self.distance               = (self.color_sample_center - self.color_swatch_center).length()
-
 class ColorSampleItem(QGraphicsEllipseItem):
     radius              = 40
     border_thickness    = 4
@@ -68,39 +58,17 @@ class ColorSampleItem(QGraphicsEllipseItem):
             reference_position  = self.project.reference_item.mapFromScene(scene_pos)
             sample_color        = self.project.reference_image.pixelColor(reference_position.toPoint())
             
-            # print("////", self.position)
             self.setBrush(QBrush(sample_color))
-
-        self.connect_all_samples()
 
         if self.color_swatch_item:
             self.color_swatch_item.sample_color = sample_color
             self.color_swatch_item.update()
 
-    def connect_all_samples(self):
-        """Connect all color samples to a color swatches."""
-
-        for color_swatch_item in ColorSwatchItem.items:
-            color_swatch_item.disconnect_from_color_sample_item()
-
-        for color_sample_item in ColorSampleItem.items:
-            links = list()
-
-            for color_swatch_item in [item for item in ColorSwatchItem.items if not item.color_sample_item]:
-                links.append(Link(color_sample_item, color_swatch_item))
-
-            if not links:
-                continue
-
-            links.sort(key=lambda item: item.distance)
-
-            color_sample_item.connect_to_color_swatch_item(links[0].color_swatch_item)
-
     def connect_to_color_swatch_item(self, color_swatch_item):
         """Connect to color swatch item."""
 
         print(__name__, color_swatch_item)
-        
+
         self.color_swatch_item = color_swatch_item
 
         self.color_swatch_item.connect_to_color_sample_item(self)
