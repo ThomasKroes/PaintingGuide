@@ -10,3 +10,6 @@ class ColorSampleLink(QObject):
         self.color_sample_center    = QVector2D(self.color_sample_item.anchor_position_scene)
         self.color_swatch_center    = QVector2D(self.color_swatch_item.anchor_position_scene)
         self.distance               = (self.color_sample_center - self.color_swatch_center).length()
+
+    def connect(self):
+        """"""

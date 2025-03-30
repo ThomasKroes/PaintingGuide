@@ -9,6 +9,8 @@ from color_swatch_item import ColorSwatchItem
 from color_sample_link import ColorSampleLink
 
 class ColorSamples(QObject):
+    links = list()
+
     def __init__(self, project):
         super().__init__()
 
@@ -20,8 +22,7 @@ class ColorSamples(QObject):
         print(__name__)
 
         try:
-            for color_swatch_item in ColorSwatchItem.items:
-                color_swatch_item.disconnect_from_color_sample_item()
+            ColorSamples.links = list()
 
             for color_sample_item in ColorSampleItem.items:
                 color_sample_links = list()
@@ -34,7 +35,11 @@ class ColorSamples(QObject):
 
                 color_sample_links.sort(key=lambda item: item.distance)
 
-                color_sample_item.connect_to_color_swatch_item(color_sample_links[0].color_swatch_item)
+                color_sample_link = color_sample_links[0]
+                color_sample_link.connect()
+                
+                ColorSamples.links.append(color_sample_link)
+                
         except Exception as e:
             print(f"Unable to save connect all samples: {e}")
             traceback.print_exc()
