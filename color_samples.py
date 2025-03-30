@@ -30,8 +30,12 @@ class ColorSamples(QObject):
         """Load from dictionary."""
         
         try:
-             for color_sample_dict in dict["ColorSamples"]:
+            for color_sample_dict in dict["ColorSamples"]:
                 ColorSampleItem.create_from_dict(self.project, color_sample_dict)
+
+            for color_sample_item in ColorSampleItem.items:
+                color_sample_item.update()
+                
         except Exception as e:
             print(f"Unable to load color samples from dictionary: {e}")
             traceback.print_exc()

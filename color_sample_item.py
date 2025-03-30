@@ -30,6 +30,8 @@ class ColorSampleItem(QGraphicsEllipseItem):
     def __init__(self, project, position=QPointF()):
         super().__init__()
         
+        print("ColorSampleItem::init()")
+
         ColorSampleItem.items.append(self)
 
         self.project                = project
@@ -97,6 +99,8 @@ class ColorSampleItem(QGraphicsEllipseItem):
     def connect_to_color_swatch_item(self, color_swatch_item):
         """Connect to color swatch item."""
 
+        print(__name__, color_swatch_item)
+        
         self.color_swatch_item = color_swatch_item
 
         self.color_swatch_item.connect_to_color_sample_item(self)

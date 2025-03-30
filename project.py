@@ -39,6 +39,8 @@ class Project(QObject):
         self.view.setScene(self.scene)
         
         self.load_reference_image(reference_image_file_path)
+        
+        self.color_swatches.update()
 
     def load_reference_image(self, reference_image_file_path):
         """ ."""
@@ -60,8 +62,6 @@ class Project(QObject):
         swatches_size = 4 * ColorSwatchItem.swatch_spacing + 2 * ColorSwatchItem.swatch_size 
 
         self.root_widget.resize(reference_image_size.toSizeF() + QSizeF(swatches_size, swatches_size))
-
-        self.color_swatches.update()
 
     def load(self, file_path):
         """Load project from disk."""
@@ -159,7 +159,7 @@ class Project(QObject):
         """Load from dictionary."""
 
         try:
-            self.reference_image_file_path = dict["ReferenceImageFilePath"]
+            self.load_reference_image(dict["ReferenceImageFilePath"])
 
             self.color_swatches.load_from_dict(dict)
             self.color_samples.load_from_dict(dict)
@@ -185,7 +185,11 @@ class Project(QObject):
         
         temp_file_path = os.path.join(self.temp_dir_save, filename)
         
+        project = dict()
+
+        self.save_to_dict(project)
+
         with open(temp_file_path, "w", encoding="utf-8") as file:
-            json.dump(self.to_dict(), file, indent=4)
+            json.dump(project, file, indent=4)
         
         return temp_file_path
