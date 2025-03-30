@@ -60,12 +60,6 @@ class ColorSwatches(QObject):
         self.clear_layout(self.top_layout)
         self.clear_layout(self.bottom_layout)
 
-        for color_swatch_item in ColorSwatchItem.items:
-            color_swatch_item.disconnect_from_color_sample_item()
-            del color_swatch_item
-
-        ColorSwatchItem.items = list()
-
         if not self.project.reference_image:
             return
         
@@ -77,36 +71,6 @@ class ColorSwatches(QObject):
             layout.addStretch(1)
 
             for swatch_index in range(number_of_swatches):
-                # widget = GraphicsWidget()
-                
-                # items = [ColorSwatchItem(anchor_alignment), ColorPieChartItem()]
-
-                # if anchor_alignment is Qt.AlignmentFlag.AlignLeft or anchor_alignment is Qt.AlignmentFlag.AlignRight:
-                #     horizontal_layout = QGraphicsLinearLayout(Qt.Orientation.Horizontal)
-
-                #     if anchor_alignment is Qt.AlignmentFlag.AlignLeft:
-                #         horizontal_layout.addItem(items[0])
-                #         horizontal_layout.addItem(items[1])
-
-                #     if anchor_alignment is Qt.AlignmentFlag.AlignRight:
-                #         horizontal_layout.addItem(items[1])
-                #         horizontal_layout.addItem(items[0])
-
-                #     widget.setLayout(horizontal_layout)
-
-                # if anchor_alignment is Qt.AlignmentFlag.AlignLeft or anchor_alignment is Qt.AlignmentFlag.AlignRight:
-                #     vertical_layout = QGraphicsLinearLayout(Qt.Orientation.Vertical)
-
-                #     if anchor_alignment is Qt.AlignmentFlag.AlignTop:
-                #         vertical_layout.addItem(items[0])
-                #         vertical_layout.addItem(items[1])
-
-                #     if anchor_alignment is Qt.AlignmentFlag.AlignBottom:
-                #         vertical_layout.addItem(items[1])
-                #         vertical_layout.addItem(items[0])
-
-                #     widget.setLayout(vertical_layout)
-
                 layout.addItem(ColorSwatchItem(anchor_alignment))
 
             layout.addStretch(1)
