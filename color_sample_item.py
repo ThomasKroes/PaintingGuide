@@ -29,7 +29,7 @@ class ColorSampleItem(QGraphicsEllipseItem):
         self.color_sample.color_changed.connect(self.color_changed)
 
         self.set_position(self.color_sample.position)
-        self.set_position(self.color_sample.position)
+        self.set_color(self.color_sample.color)
 
     def position_changed(self, position : QPointF):
         """Invoked when the color sample color changes."""
@@ -41,8 +41,10 @@ class ColorSampleItem(QGraphicsEllipseItem):
         
         self.set_color(color)
 
-    def set_position(self, center : QPointF):
+    def set_position(self, position : QPointF):
         """Set the item center."""
+
+        center = self.mapFromScene(position)
 
         self.setRect(center.x() - ColorSampleItem.radius / 2, center.y() - ColorSampleItem.radius / 2, ColorSampleItem.radius, ColorSampleItem.radius)
 

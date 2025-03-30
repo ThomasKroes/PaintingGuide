@@ -13,13 +13,13 @@ class ColorSample(QObject):
     position_changed    = pyqtSignal(QPointF)
     color_changed       = pyqtSignal(QColor)
 
-    def __init__(self, project, position=QPoint()):
+    def __init__(self, project, position=QPointF()):
         super().__init__()
 
         ColorSample.color_samples.append(self)
 
         self.project                = project
-        self.position               = position
+        self.position               = QPointF(position)
         self.color                  = QColor()
         self.color_sample_item      = ColorSampleItem(self)
         self.color_sample_link_item = ColorSampleLinkItem(self)
