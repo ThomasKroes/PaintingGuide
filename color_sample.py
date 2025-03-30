@@ -27,6 +27,11 @@ class ColorSample(QObject):
         self.project.scene.addItem(self.color_sample_item)
         self.project.scene.addItem(self.color_sample_link_item)
 
+        # color_sample_links = list()
+
+        # for color_swatch_item in [item for item in ColorSwatchItem.items if not item.color_sample_item]:
+        #     color_sample_links.append(ColorSampleLink(color_sample_item, color_swatch_item))
+
     def __del__(self):
         """Remove color sample from tracking when deleted."""
 

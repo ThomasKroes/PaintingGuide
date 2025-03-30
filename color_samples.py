@@ -2,7 +2,7 @@ import traceback
 
 from PyQt6.QtWidgets import QLabel, QGraphicsRectItem, QGraphicsLinearLayout, QGraphicsWidget
 from PyQt6.QtGui import QPainter, QBrush, QPen, QColor, QPainterPath
-from PyQt6.QtCore import Qt, QRectF, QMarginsF, QObject, QMarginsF
+from PyQt6.QtCore import Qt, QRectF, QMarginsF, QObject, pyqtSignal
 
 from color_sample import ColorSample
 from color_sample_item import ColorSampleItem
@@ -10,7 +10,8 @@ from color_swatch_item import ColorSwatchItem
 from color_sample_link import ColorSampleLink
 
 class ColorSamples(QObject):
-    links = list()
+    links                       = list()
+    number_of_swatches_changed  = pyqtSignal()
 
     def __init__(self, project):
         super().__init__()
