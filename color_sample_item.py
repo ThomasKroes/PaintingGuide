@@ -20,6 +20,8 @@ class ColorSampleItem(QGraphicsEllipseItem):
         self.color_sample           = color_sample
         self.anchor_position_scene  = QPointF()
 
+        self.setZValue(1)
+        
         self.setPen(QPen(QApplication.instance().palette().color(QPalette.ColorGroup.Normal, QPalette.ColorRole.Text), ColorSampleItem.border_thickness))
         self.setFlag(QGraphicsEllipseItem.GraphicsItemFlag.ItemIsMovable)
         self.setFlag(QGraphicsEllipseItem.GraphicsItemFlag.ItemIsSelectable)

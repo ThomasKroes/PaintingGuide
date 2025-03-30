@@ -58,7 +58,8 @@ class ColorSample(QObject):
             
             self.set_anchor(self.position)
             self.set_color(self.project.reference_image.pixelColor(reference_position.toPoint()))
-
+            self.project.color_sample_links.choose_links()
+            
     def set_anchor(self, anchor : QPointF):
         """Set anchor in scene coordinates."""
 

@@ -10,6 +10,7 @@ from color_swatches import ColorSwatches
 from color_swatch_item import ColorSwatchItem
 from color_samples import ColorSamples
 from color_sample_item import ColorSampleItem
+from color_sample_links import ColorSampleLinks
 
 class Project(QObject):
     def __init__(self, reference_image_file_path=""):
@@ -26,6 +27,7 @@ class Project(QObject):
         self.reference_item             = ReferenceItem(self)
         self.color_swatches             = ColorSwatches(self)
         self.color_samples              = ColorSamples(self)
+        self.color_sample_links         = ColorSampleLinks(self)
         self.file_path                  = ""
         self.export_image_file_path     = ""
         self.color_dialog               = None
@@ -151,6 +153,7 @@ class Project(QObject):
 
             self.color_swatches.save_to_dict(dict)
             self.color_samples.save_to_dict(dict)
+            self.color_sample_links.save_to_dict(dict)
         except Exception as e:
             print(f"Cannot save project to dictionary: {e}")
             traceback.print_exc()
@@ -163,6 +166,7 @@ class Project(QObject):
 
             self.color_swatches.load_from_dict(dict)
             self.color_samples.load_from_dict(dict)
+            self.color_sample_links.load_from_dict(dict)
         except Exception as e:
             print(f"Cannot load project from dictionary: {e}")
             traceback.print_exc()
