@@ -11,7 +11,7 @@ from color_sample_link import ColorSampleLink
 
 class ColorSamples(QObject):
     links                       = list()
-    number_of_swatches_changed  = pyqtSignal()
+    
 
     def __init__(self, project):
         super().__init__()

@@ -2,13 +2,16 @@ import traceback
 
 from PyQt6.QtWidgets import QLabel, QGraphicsRectItem, QGraphicsLinearLayout, QGraphicsWidget
 from PyQt6.QtGui import QPainter, QBrush, QPen, QColor, QPainterPath
-from PyQt6.QtCore import Qt, QRectF, QMarginsF, QObject, QMarginsF
+from PyQt6.QtCore import Qt, QRectF, QMarginsF, QObject, pyqtSignal
 
 from graphics_widget import GraphicsWidget
+from color_swatch import ColorSwatch
 from color_swatch_item import ColorSwatchItem
 from color_pie_chart_item import ColorPieChartItem
 
 class ColorSwatches(QObject):
+    swatches_changed = pyqtSignal()
+
     def __init__(self, project):
         super().__init__()
 
@@ -53,6 +56,8 @@ class ColorSwatches(QObject):
 
         self.update()
 
+        self.swatches_changed.emit()
+
     def update(self):
 
         self.clear_layout(self.left_layout)
@@ -71,7 +76,8 @@ class ColorSwatches(QObject):
             layout.addStretch(1)
 
             for swatch_index in range(number_of_swatches):
-                layout.addItem(ColorSwatchItem(anchor_alignment))
+                color_swatch = ColorSwatch(self.project, anchor_alignment)
+                layout.addItem(color_swatch.color_swatch_item)
 
             layout.addStretch(1)
             layout.invalidate()

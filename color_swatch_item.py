@@ -13,7 +13,7 @@ class ColorSwatchItem(GraphicsWidget):
     items                       = list()
     background_color_inactive   = QColor(60, 60, 60)
 
-    def __init__(self, anchor_alignment : Qt.AlignmentFlag):
+    def __init__(self, color_swatch):
         super().__init__()
 
         ColorSwatchItem.items.append(self)
@@ -24,7 +24,7 @@ class ColorSwatchItem(GraphicsWidget):
         self.setFlag(GraphicsWidget.GraphicsItemFlag.ItemSendsGeometryChanges)
         self.setFlag(GraphicsWidget.GraphicsItemFlag.ItemSendsScenePositionChanges)
 
-        self.anchor_alignment       = anchor_alignment
+        self.color_swatch           = color_swatch
         self.is_active              = False
         self.sample_color           = QColor(60, 60, 60)
         self.corner_radius          = ColorSwatchItem.swatch_size / 5
@@ -33,20 +33,24 @@ class ColorSwatchItem(GraphicsWidget):
         self.anchor_position_scene  = QPointF()
 
     def itemChange(self, change, value):
+        """Invoked when the item changes."""
+
+        anchor_position_scene = QPointF()
+
         if change == QGraphicsItem.GraphicsItemChange.ItemPositionHasChanged:
-            if self.anchor_alignment is Qt.AlignmentFlag.AlignLeft:
-                self.anchor_position_scene = QPointF(self.rect().left(), self.rect().center().y())
+            if self.color_swatch.anchor_alignment is Qt.AlignmentFlag.AlignLeft:
+                anchor_position_scene = QPointF(self.rect().left(), self.rect().center().y())
 
-            if self.anchor_alignment is Qt.AlignmentFlag.AlignRight:
-                self.anchor_position_scene = QPointF(self.rect().right(), self.rect().center().y())
+            if self.color_swatch.anchor_alignment is Qt.AlignmentFlag.AlignRight:
+                anchor_position_scene = QPointF(self.rect().right(), self.rect().center().y())
 
-            if self.anchor_alignment is Qt.AlignmentFlag.AlignTop:
-                self.anchor_position_scene = QPointF(self.rect().center().x(), self.rect().top())
+            if self.color_swatch.anchor_alignment is Qt.AlignmentFlag.AlignTop:
+                anchor_position_scene = QPointF(self.rect().center().x(), self.rect().top())
 
-            if self.anchor_alignment is Qt.AlignmentFlag.AlignBottom:
-                self.anchor_position_scene = QPointF(self.rect().center().x(), self.rect().bottom())
+            if self.color_swatch.anchor_alignment is Qt.AlignmentFlag.AlignBottom:
+                anchor_position_scene = QPointF(self.rect().center().x(), self.rect().bottom())
 
-            self.anchor_position_scene = self.mapToScene(self.anchor_position_scene)
+            self.color_swatch.set_anchor(self.mapToScene(anchor_position_scene))
 
         return super().itemChange(change, value)
 

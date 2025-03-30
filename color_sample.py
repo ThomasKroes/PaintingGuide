@@ -4,13 +4,17 @@ from PyQt6.QtGui import QColor
 from PyQt6.QtCore import QObject, QPointF, pyqtSignal
 
 from color_sample_item import ColorSampleItem
-from color_sample_link_item import ColorSampleLinkItem
+from color_sample_link import ColorSampleLink
+from color_swatch import ColorSwatch
+
+from color_swatches import ColorSwatches
 
 from common import *
 
 class ColorSample(QObject):
     color_samples       = list()
     position_changed    = pyqtSignal(QPointF)
+    anchor_changed      = pyqtSignal(QPointF)
     color_changed       = pyqtSignal(QColor)
 
     def __init__(self, project, position=QPointF()):
@@ -20,37 +24,48 @@ class ColorSample(QObject):
 
         self.project                = project
         self.position               = QPointF(position)
+        self.anchor                 = QPointF(position)
         self.color                  = QColor()
         self.color_sample_item      = ColorSampleItem(self)
-        self.color_sample_link_item = ColorSampleLinkItem(self)
 
         self.project.scene.addItem(self.color_sample_item)
-        self.project.scene.addItem(self.color_sample_link_item)
 
-        # color_sample_links = list()
+        self.project.color_swatches.swatches_changed.connect(self.update_candidate_links)
 
-        # for color_swatch_item in [item for item in ColorSwatchItem.items if not item.color_sample_item]:
-        #     color_sample_links.append(ColorSampleLink(color_sample_item, color_swatch_item))
+        self.update_candidate_links()
 
     def __del__(self):
         """Remove color sample from tracking when deleted."""
 
         if self in ColorSample.color_samples:
             ColorSample.color_samples.remove(self)
+    
+    def update_candidate_links(self):
+        """Creates all candidate links with the color swatches."""
+
+        for color_swatch in ColorSwatch.color_swatches:
+            ColorSampleLink(self, color_swatch)
 
     def set_position(self, position : QPointF):
         """Set position in scene coordinates."""
 
-        if position is self.position:
-            return
-        
-        self.position = position
+        if position is not self.position:
+            self.position = position
 
-        self.position_changed.emit(self.position)
+            self.position_changed.emit(self.position)
 
-        reference_position = self.project.reference_item.mapFromScene(self.position)
-        
-        self.set_color(self.project.reference_image.pixelColor(reference_position.toPoint()))
+            reference_position = self.project.reference_item.mapFromScene(self.position)
+            
+            self.set_anchor(self.position)
+            self.set_color(self.project.reference_image.pixelColor(reference_position.toPoint()))
+
+    def set_anchor(self, anchor : QPointF):
+        """Set anchor in scene coordinates."""
+
+        if anchor is not self.anchor:
+            self.anchor = anchor
+            
+            self.anchor_changed.emit(self.anchor)
 
     def set_color(self, color : QColor):
         """Set color."""
