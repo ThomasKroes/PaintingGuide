@@ -4,6 +4,7 @@ from PyQt6.QtWidgets import QLabel, QGraphicsRectItem, QGraphicsLinearLayout, QG
 from PyQt6.QtGui import QPainter, QBrush, QPen, QColor, QPainterPath
 from PyQt6.QtCore import Qt, QRectF, QMarginsF, QObject, QMarginsF
 
+from color_sample import ColorSample
 from color_sample_item import ColorSampleItem
 from color_swatch_item import ColorSwatchItem
 from color_sample_link import ColorSampleLink
@@ -24,21 +25,21 @@ class ColorSamples(QObject):
         try:
             ColorSamples.links = list()
 
-            for color_sample_item in ColorSampleItem.items:
-                color_sample_links = list()
+        #     for color_sample_item in ColorSampleItem.items:
+        #         color_sample_links = list()
 
-                for color_swatch_item in [item for item in ColorSwatchItem.items if not item.color_sample_item]:
-                    color_sample_links.append(ColorSampleLink(color_sample_item, color_swatch_item))
+        #         for color_swatch_item in [item for item in ColorSwatchItem.items if not item.color_sample_item]:
+        #             color_sample_links.append(ColorSampleLink(color_sample_item, color_swatch_item))
 
-                if not color_sample_links:
-                    continue
+        #         if not color_sample_links:
+        #             continue
 
-                color_sample_links.sort(key=lambda item: item.distance)
+        #         color_sample_links.sort(key=lambda item: item.distance)
 
-                color_sample_link = color_sample_links[0]
-                color_sample_link.connect()
-                
-                ColorSamples.links.append(color_sample_link)
+        #         color_sample_link = color_sample_links[0]
+        #         color_sample_link.connect()
+
+        #         ColorSamples.links.append(color_sample_link)
                 
         except Exception as e:
             print(f"Unable to save connect all samples: {e}")
@@ -50,8 +51,8 @@ class ColorSamples(QObject):
         try:
             color_samples = list()
 
-            for color_sample_item in ColorSampleItem.items:
-                color_samples.append(color_sample_item.to_dict())
+            for color_samples in ColorSamples.color_samples:
+                color_samples.append(color_samples.to_dict())
 
             dict["ColorSamples"] = color_samples
         except Exception as e:
@@ -63,10 +64,7 @@ class ColorSamples(QObject):
         
         try:
             for color_sample_dict in dict["ColorSamples"]:
-                ColorSampleItem.create_from_dict(self.project, color_sample_dict)
-
-            for color_sample_item in ColorSampleItem.items:
-                color_sample_item.update()
+                ColorSample.create_from_dict(self.project, color_sample_dict)
 
             self.connect_all_samples()
         except Exception as e:

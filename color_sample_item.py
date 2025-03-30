@@ -5,8 +5,6 @@ from PyQt6.QtGui import QPainter, QBrush, QPen, QColor, QPainterPath, QVector2D,
 from PyQt6.QtCore import Qt, QRectF, QMarginsF, QObject, QPoint, QSizeF, QPointF, QLineF, QTimer
 
 from color_swatch_item import ColorSwatchItem
-from color_sample_link_item import ColorSampleLinkItem
-from drop_shadow_mixin import DropShadowMixin
 
 def clamp(value, min_value, max_value):
     return max(min_value, min(value, max_value))
@@ -15,121 +13,48 @@ class ColorSampleItem(QGraphicsEllipseItem):
     radius              = 40
     border_thickness    = 4
     border_color        = ColorSwatchItem.border_color_active
-    items               = list()
 
-    def __init__(self, project, position=QPointF()):
+    def __init__(self, color_sample):
         super().__init__()
         
-        print("ColorSampleItem::init()")
-
-        ColorSampleItem.items.append(self)
-
-        self.project                = project
-        self.color_swatch_item      = None
-        self.link_item              = ColorSampleLinkItem(self)
+        self.color_sample           = color_sample
         self.anchor_position_scene  = QPointF()
 
-        self.project.scene.addItem(self.link_item)
-        self.project.scene.addItem(self)
-
         self.setPen(QPen(QApplication.instance().palette().color(QPalette.ColorGroup.Normal, QPalette.ColorRole.Text), ColorSampleItem.border_thickness))
-        self.setRect(position.x() - ColorSampleItem.radius / 2, position.y() - ColorSampleItem.radius / 2, ColorSampleItem.radius, ColorSampleItem.radius)
         self.setFlag(QGraphicsEllipseItem.GraphicsItemFlag.ItemIsMovable)
         self.setFlag(QGraphicsEllipseItem.GraphicsItemFlag.ItemIsSelectable)
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemSendsGeometryChanges)
         
-        self.setRect(position.x() - ColorSampleItem.radius / 2, position.y() - ColorSampleItem.radius / 2, ColorSampleItem.radius, ColorSampleItem.radius)
+        self.color_sample.position_changed.connect(self.position_changed)
+        self.color_sample.color_changed.connect(self.color_changed)
 
-        self.update()
+        self.set_position(self.color_sample.position)
+        self.set_position(self.color_sample.position)
 
-    def __del__(self):
-        """Remove item from tracking when deleted."""
-
-        if self in ColorSampleItem.items:
-            ColorSampleItem.items.remove(self)
-
-    def update(self):
-        """Update tge """
-
-        sample_color = Qt.GlobalColor.black
-
-        if self.project.reference_image:
-            scene_pos           = self.mapToScene(self.rect().center())
-            reference_position  = self.project.reference_item.mapFromScene(scene_pos)
-            sample_color        = self.project.reference_image.pixelColor(reference_position.toPoint())
-            
-            self.setBrush(QBrush(sample_color))
-
-        if self.color_swatch_item:
-            self.color_swatch_item.sample_color = sample_color
-            self.color_swatch_item.update()
-
-    def connect_to_color_swatch_item(self, color_swatch_item):
-        """Connect to color swatch item."""
-
-        print(__name__, color_swatch_item)
-
-        self.color_swatch_item = color_swatch_item
-
-        self.color_swatch_item.connect_to_color_sample_item(self)
-
-        self.color_swatch_item.sample_color = self.brush().color()
-
+    def position_changed(self, position : QPointF):
+        """Invoked when the color sample color changes."""
         
-        line = QLineF(self.anchor_position_scene, self.color_swatch_item.anchor_position_scene)
+        self.set_position(position)
 
-        if line is not self.link_item.line():
-            # self.link_item.fade_out()
-            self.link_item.setLine(line)
-            # self.link_item.fade_in()
+    def color_changed(self, color : QColor):
+        """Invoked when the color sample color changes."""
+        
+        self.set_color(color)
 
-    def disconnect_from_color_swatch_item(self):
-        """Disconnect from color swatch item."""
+    def set_position(self, center : QPointF):
+        """Set the item center."""
 
-        self.color_swatch_item = None
+        self.setRect(center.x() - ColorSampleItem.radius / 2, center.y() - ColorSampleItem.radius / 2, ColorSampleItem.radius, ColorSampleItem.radius)
+
+    def set_color(self, color):
+        """Set the item color."""
+
+        self.setBrush(QBrush(color))
 
     def itemChange(self, change, value):
-        if change == QGraphicsEllipseItem.GraphicsItemChange.ItemVisibleHasChanged:
-            self.anchor_position_scene = self.mapToScene(self.rect().center())
-
-            self.update()
-
-        if change == QGraphicsEllipseItem.GraphicsItemChange.ItemPositionHasChanged:
-            self.anchor_position_scene = self.mapToScene(self.rect().center())
-
-            self.update()
+        if change == QGraphicsEllipseItem.GraphicsItemChange.ItemVisibleHasChanged or change == QGraphicsEllipseItem.GraphicsItemChange.ItemPositionHasChanged:
+            self.color_sample.set_position(self.mapToScene(self.rect().center()))
 
         return super().itemChange(change, value)
    
-    def to_dict(self):
-        """Convert the color sample to a dictionary."""
-
-        scene_pos   = self.mapToScene(self.rect().center())
-        position    = scene_pos#self.project.reference_item.mapFromScene(scene_pos)
-
-        return {
-            "Position": {
-                "X": position.x(),
-                "Y": position.y()
-            }
-        }
-    
-    @staticmethod
-    def create_from_scene_position(project, scene_position : QPointF):
-        """Create a color sample from scene position."""
-
-        try:
-            ColorSampleItem(project, scene_position)
-        except Exception as e:
-            print(f"Cannot create color sample item from scene position: {e}")
-            traceback.print_exc()
-    
-    @staticmethod
-    def create_from_dict(project, dict : dict):
-        """Create a color sample from dictionary."""
-
-        try:
-            ColorSampleItem.create_from_scene_position(project, QPointF(dict["Position"]["X"], dict["Position"]["Y"]))
-        except Exception as e:
-            print(f"Cannot create color sample item from dictionary: {e}")
-            traceback.print_exc()
+   

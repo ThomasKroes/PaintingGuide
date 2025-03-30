@@ -3,7 +3,7 @@ from PyQt6.QtGui import QWheelEvent, QMouseEvent, QBrush, QColor, QPainter, QPix
 from PyQt6.QtCore import Qt, QPointF, QRect
 
 from magic_lens_item import MagicLensItem
-from color_sample_item import ColorSampleItem
+from color_sample import ColorSample
 from view_context_menu import ViewContextMenu
 from common import *
 
@@ -53,7 +53,7 @@ class ProjectView(QGraphicsView):
                 self.setCursor(Qt.CursorShape.ClosedHandCursor)
 
             if QApplication.keyboardModifiers() & Qt.KeyboardModifier.ControlModifier:
-                ColorSampleItem.create_from_scene_position(self.project, self.mapToScene(event.pos()).toPoint())
+                ColorSample.create_from_scene_position(self.project, self.mapToScene(event.pos()).toPoint())
 
         super().mousePressEvent(event)
 
@@ -111,10 +111,10 @@ class ProjectView(QGraphicsView):
         """Convert the reference item properties to a dictionary."""
 
         return {
-            "BackgroundColor": color_to_dict(self.background_color),
+            "BackgroundColor": qcolor_to_dict(self.background_color),
         }
 
     def from_dict(self, dict):
         """Serialize the reference item from JSON."""
 
-        self.background_color = color_from_dict(dict["BackgroundColor"])
+        self.background_color = qcolor_from_dict(dict["BackgroundColor"])

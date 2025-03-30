@@ -16,8 +16,6 @@ class ColorSwatchItem(GraphicsWidget):
     def __init__(self, anchor_alignment : Qt.AlignmentFlag):
         super().__init__()
 
-        print("ColorSwatchItem::init()")
-
         ColorSwatchItem.items.append(self)
         
         self.set_fixed_size(QSizeF(ColorSwatchItem.swatch_size, ColorSwatchItem.swatch_size))
