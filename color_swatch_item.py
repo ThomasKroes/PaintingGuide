@@ -3,13 +3,12 @@ from PyQt6.QtCore import Qt, QRectF, QMarginsF, QSizeF, QPointF
 from PyQt6.QtWidgets import QGraphicsItem
 
 from graphics_widget import GraphicsWidget
+from styling import *
 
 class ColorSwatchItem(GraphicsWidget):
-    swatch_size                 = 100
-    swatch_spacing              = 20
+    swatch_size                 = 250
+    swatch_spacing              = swatch_size / 5
     margin                      = 20
-    border_color_active         = Qt.GlobalColor.white
-    border_color_inactive       = QColor(90, 90, 90)
     items                       = list()
     background_color_inactive   = QColor(60, 60, 60)
 
@@ -23,14 +22,14 @@ class ColorSwatchItem(GraphicsWidget):
         self.setFlag(GraphicsWidget.GraphicsItemFlag.ItemIsSelectable)
         self.setFlag(GraphicsWidget.GraphicsItemFlag.ItemSendsGeometryChanges)
         self.setFlag(GraphicsWidget.GraphicsItemFlag.ItemSendsScenePositionChanges)
-
+        
         self.color_swatch           = color_swatch
-        self.is_active              = False
-        self.sample_color           = QColor(60, 60, 60)
         self.corner_radius          = ColorSwatchItem.swatch_size / 5
         self.border_width           = ColorSwatchItem.swatch_size / 25
-        self.color_sample_item      = None
         self.anchor_position_scene  = QPointF()
+
+        self.color_swatch.color_changed.connect(self.update)
+        self.color_swatch.active_changed.connect(self.update)
 
     def itemChange(self, change, value):
         """Invoked when the item changes."""
@@ -54,27 +53,6 @@ class ColorSwatchItem(GraphicsWidget):
 
         return super().itemChange(change, value)
 
-    def __del__(self):
-        """Remove item from tracking when deleted."""
-
-        if self.color_sample_item:
-            self.color_sample_item.disconnect_from_color_swatch_item()
-
-    def connect_to_color_sample_item(self, color_sample_item):
-        """Connect to color sample item."""
-
-        self.color_sample_item  = color_sample_item
-        self.is_active          = True
-
-    def disconnect_from_color_sample_item(self):
-        """Disconnect from color sample item."""
-
-        self.sample_color       = ColorSwatchItem.background_color_inactive
-        self.color_sample_item  = None
-        self.is_active          = False
-
-        self.update()
-
     def paint(self, painter: QPainter, option, widget=None):
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         
@@ -83,14 +61,17 @@ class ColorSwatchItem(GraphicsWidget):
 
         path.addRoundedRect(rect, self.corner_radius, self.corner_radius)
 
-        painter.setBrush(QBrush(self.sample_color))
+        painter.setBrush(QBrush(self.color_swatch.color))
         painter.setPen(Qt.PenStyle.NoPen)
         painter.drawPath(path)
         
-        pen = QPen(self.border_color_active if self.is_active else self.border_color_inactive, self.border_width)
-        
-        pen.setStyle(Qt.PenStyle.SolidLine)
+        # border_color = get_border_color(ItemType.ColorSwatch, ItemState.Selected if self.isSelected() else ItemState.Normal)
+        # border_width = get_border_width(ItemType.ColorSwatch, ItemState.Selected if self.isSelected() else ItemState.Normal)
 
-        painter.setPen(pen)
+        # pen = QPen(border_color, border_width)
+        
+        # pen.setStyle(Qt.PenStyle.SolidLine)
+
+        painter.setPen(get_item_pen(self))
         painter.drawPath(path)
 

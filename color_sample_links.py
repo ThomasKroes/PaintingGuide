@@ -19,15 +19,14 @@ class ColorSampleLinks(QObject):
             link.deactivate()
             link.update_distance()
 
-        
-
         for color_sample in ColorSample.color_samples:
             inactive_links  = [link for link in ColorSampleLink.color_sample_links if not link.color_swatch in ColorSampleLink.occupied_color_swatches]
             links           = [link for link in inactive_links if link.color_sample is color_sample]
 
             links.sort(key=lambda item: item.distance)
 
-            links[0].activate()
+            if links:
+                links[0].activate()
 
         for link in ColorSampleLink.color_sample_links:
             link.set_visible(link.active)

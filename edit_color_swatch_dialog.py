@@ -26,7 +26,7 @@ class EditColorSwatchDialog(QDialog):
         self.color_swatch_size_spinbox.setDecimals(1)
         self.color_swatch_size_spinbox.setRange(0.0, 100.0)
         self.color_swatch_size_spinbox.setSuffix(" px")
-        self.color_swatch_size_spinbox.setValue(100.0)
+        self.color_swatch_size_spinbox.setValue(1000.0)
 
         self.color_swatch_size_spinbox.valueChanged.connect(self.update_color_swatches)
 

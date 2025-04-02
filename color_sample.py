@@ -22,32 +22,61 @@ class ColorSample(QObject):
 
         ColorSample.color_samples.append(self)
 
+        self.verbose                = True
         self.project                = project
         self.position               = QPointF(position)
         self.anchor                 = QPointF(position)
         self.color                  = QColor()
         self.color_sample_item      = ColorSampleItem(self)
-
+        
         self.project.scene.addItem(self.color_sample_item)
 
         self.project.color_swatches.swatches_changed.connect(self.update_candidate_links)
 
         self.update_candidate_links()
 
+    def __debug_print__(self, message : str):
+        """Print a nicely formatted debug message."""
+
+        if self.verbose:
+            if self in ColorSample.color_samples:
+                print(f"{ __class__.__name__ } { ColorSample.color_samples.index(self) + 1 }: { message }")
+            else:
+                print(f"{ __class__.__name__ }: { message }")
+
     def __del__(self):
         """Remove color sample from tracking when deleted."""
 
+        self.__debug_print__("Delete")
+    
+    def remove(self):
+        """Remove the color sample and the associated items."""
+        
+        self.__debug_print__("Remove")
+
+        self.project.scene.removeItem(self.color_sample_item)
+
         if self in ColorSample.color_samples:
             ColorSample.color_samples.remove(self)
-    
+
+        for color_sample_link in ColorSampleLink.color_sample_links:
+            if color_sample_link.color_sample is self:
+                color_sample_link.remove()
+
+        del self
+
     def update_candidate_links(self):
         """Creates all candidate links with the color swatches."""
+
+        self.__debug_print__(f"Update candidate links")
 
         for color_swatch in ColorSwatch.color_swatches:
             ColorSampleLink(self, color_swatch)
 
     def set_position(self, position : QPointF):
         """Set position in scene coordinates."""
+
+        self.__debug_print__(f"Set position: { qpointf_to_string(position) }")
 
         if position is not self.position:
             self.position = position
@@ -63,6 +92,8 @@ class ColorSample(QObject):
     def set_anchor(self, anchor : QPointF):
         """Set anchor in scene coordinates."""
 
+        self.__debug_print__(f"Set anchor: { qpointf_to_string(anchor) }")
+
         if anchor is not self.anchor:
             self.anchor = anchor
             
@@ -71,6 +102,8 @@ class ColorSample(QObject):
     def set_color(self, color : QColor):
         """Set color."""
 
+        self.__debug_print__(f"Set color: { qcolor_to_rgb_string(color) }")
+
         if color is self.color:
             return
         
@@ -78,14 +111,18 @@ class ColorSample(QObject):
 
         self.color_changed.emit(self.color)
 
-    def save_to_dict(self, dict : dict):
+    def save_to_dict(self):
         """Save in dictionary."""
 
         try:
-            dict["ColorSample"] = {
-                "Position": qpointf_to_dict(self.position),
-                "Color": qcolor_to_dict(self.color)
-            }
+            self.__debug_print__(f"Save to dict: { qpointf_to_string(self.position) }, { qcolor_to_rgb_string(self.color) }")
+
+            color_sample_dict = dict()
+
+            color_sample_dict["Position"]   = qpointf_to_dict(self.position)
+            color_sample_dict["Color"]      = qcolor_to_dict(self.color)
+
+            return color_sample_dict
         except Exception as e:
             print(f"Unable to save color sample to dictionary: {e}")
             traceback.print_exc()
@@ -94,13 +131,16 @@ class ColorSample(QObject):
         """Load from dictionary."""
         
         try:
-            self.position   = qpointf_from_dict(dict["Position"])
-            self.color      = qcolor_from_dict(dict["Color"])
+            self.set_position(qpointf_from_dict(dict["Position"]))
+            self.set_color(qcolor_from_dict(dict["Color"]))
 
-            for color_sample_item in ColorSampleItem.items:
-                color_sample_item.update()
+            self.__debug_print__(f"Load from dict: { qpointf_to_string(self.position) }, { qcolor_to_rgb_string(self.color) }")
 
-            self.connect_all_samples()
+            # reference_position = self.project.reference_item.mapFromScene(self.position)
+
+            # self.set_color(self.project.reference_image.pixelColor(reference_position.toPoint()))
+            # self.project.color_sample_links.choose_links()
+
         except Exception as e:
             print(f"Unable to load color sample from dictionary: {e}")
             traceback.print_exc()

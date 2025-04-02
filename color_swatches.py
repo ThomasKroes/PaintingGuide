@@ -16,8 +16,6 @@ class ColorSwatches(QObject):
         super().__init__()
 
         self.project        = project
-        self.size           = 100
-        self.spacing        = 20
 
         self.left_widget    = GraphicsWidget()
         self.right_widget   = GraphicsWidget()
@@ -68,7 +66,7 @@ class ColorSwatches(QObject):
         if not self.project.reference_image:
             return
         
-        color_swatch_size               = self.size + 2 * self.spacing
+        color_swatch_size               = ColorSwatchItem.swatch_size + 2 * ColorSwatchItem.swatch_spacing
         number_of_swatches_horizontal   = self.project.reference_image.size().width() // int(color_swatch_size)
         number_of_swatches_vertical     = self.project.reference_image.size().height() // int(color_swatch_size)
 
@@ -100,10 +98,11 @@ class ColorSwatches(QObject):
         """Save in dictionary."""
 
         try:
-            dict["ColorSwatches"] = {
-                "Size": self.size,
-                "Spacing": self.spacing
-            }
+            pass
+            # dict["ColorSwatches"] = {
+            #     "Size": self.size,
+            #     "Spacing": self.spacing
+            # }
         except Exception as e:
             print(f"Unable to save color swatches to dictionary: {e}")
             traceback.print_exc()
@@ -112,8 +111,8 @@ class ColorSwatches(QObject):
         """Load from dictionary."""
         
         try:
-            self.size       = dict["ColorSwatches"]["Size"]
-            self.spacing    = dict["ColorSwatches"]["Spacing"]
+            # self.size       = dict["ColorSwatches"]["Size"]
+            # self.spacing    = dict["ColorSwatches"]["Spacing"]
 
             self.update()
         except Exception as e:

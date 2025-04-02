@@ -11,13 +11,13 @@ class ProjectView(QGraphicsView):
     def __init__(self, project):
         super().__init__(project.scene)
         
-        self.setDragMode(QGraphicsView.DragMode.NoDrag)
+        #self.setDragMode(QGraphicsView.DragMode.NoDrag)
         self.setTransformationAnchor(QGraphicsView.ViewportAnchor.AnchorUnderMouse)
         self.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
         self.setRenderHint(QPainter.RenderHint.Antialiasing)
-        self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        # self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         
-        self.customContextMenuRequested.connect(self.show_context_menu)
+        # self.customContextMenuRequested.connect(self.show_context_menu)
 
         self.project                = project
         self.is_panning             = False

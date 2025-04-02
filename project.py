@@ -32,6 +32,8 @@ class Project(QObject):
         self.export_image_file_path     = ""
         self.color_dialog               = None
 
+        self.scene.setItemIndexMethod(QGraphicsScene.ItemIndexMethod.NoIndex)
+
         self.grid_layout.setSpacing(0)
         self.grid_layout.addItem(self.reference_item, 1, 1)
         self.root_widget.setLayout(self.grid_layout)

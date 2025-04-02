@@ -4,6 +4,8 @@ from PyQt6.QtCore import Qt, QRectF, QMarginsF
 from graphics_widget import GraphicsWidget
 from color_swatch_item import ColorSwatchItem
 
+from styling import *
+
 class ReferenceItem(GraphicsWidget):
     def __init__(self, project):
         super().__init__()
@@ -19,7 +21,7 @@ class ReferenceItem(GraphicsWidget):
             painter.drawPixmap(0, 0, QPixmap.fromImage(self.project.reference_image))
 
         painter.setBrush(Qt.BrushStyle.NoBrush)
-        painter.setPen(ColorSwatchItem.border_color_inactive)
+        painter.setPen(get_item_pen(self))
         painter.drawRect(self.rect())
    
     
