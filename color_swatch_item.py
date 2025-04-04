@@ -1,6 +1,5 @@
-from PyQt6.QtGui import QPainter, QBrush, QPen, QColor, QPainterPath
-from PyQt6.QtCore import Qt, QRectF, QMarginsF, QSizeF, QPointF
-from PyQt6.QtWidgets import QGraphicsItem
+from PyQt6.QtGui import QPainter, QBrush, QPainterPath
+from PyQt6.QtCore import QRectF, QPointF
 
 from graphics_widget import GraphicsWidget
 from drop_shadow_mixin import DropShadowMixin
@@ -24,6 +23,7 @@ class ColorSwatchItem(GraphicsWidget, DropShadowMixin):
         self.setFlag(GraphicsWidget.GraphicsItemFlag.ItemIsSelectable)
         self.setFlag(GraphicsWidget.GraphicsItemFlag.ItemSendsGeometryChanges)
         self.setFlag(GraphicsWidget.GraphicsItemFlag.ItemSendsScenePositionChanges)
+        
         self.setZValue(1)
 
         self.color_swatch           = color_swatch
@@ -55,6 +55,8 @@ class ColorSwatchItem(GraphicsWidget, DropShadowMixin):
         return path
 
     def paint(self, painter: QPainter, option, widget=None):
+        """Override to draw custom color swatch."""
+
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         
         painter.setBrush(QBrush(self.color_swatch.color))
