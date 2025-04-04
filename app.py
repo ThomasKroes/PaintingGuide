@@ -52,6 +52,8 @@ class PaintingGuide(QMainWindow):
         
         self.import_reference_image_action = QAction("Import reference image", self)
         self.import_reference_image_action.triggered.connect(self.import_reference_image)
+        self.import_reference_image_action.setShortcut("Ctrl+I")
+
         self.import_reference_image_action.setIcon(qta.icon("fa5s.file-import"))
 
         file_menu.addAction(self.import_reference_image_action)
@@ -60,18 +62,24 @@ class PaintingGuide(QMainWindow):
 
         self.open_project_action = QAction("Open project", self)
         self.open_project_action.setIcon(qta.icon("fa5s.folder-open"))
+        self.open_project_action.setShortcut("Ctrl+O")
+
         self.open_project_action.triggered.connect(self.open_project)
 
         file_menu.addAction(self.open_project_action)
 
         self.save_project_action = QAction("Save project", self)
         self.save_project_action.setIcon(qta.icon("fa5s.save"))
+        self.save_project_action.setShortcut("Ctrl+S")
+
         self.save_project_action.triggered.connect(self.save_project)
 
         file_menu.addAction(self.save_project_action)
 
         self.save_project_as_action = QAction("Save project as...", self)
         self.save_project_as_action.setIcon(qta.icon("fa5s.save"))
+        self.save_project_as_action.setShortcut("Ctrl+Shift+S")
+
         self.save_project_as_action.triggered.connect(self.save_project_as)
 
         file_menu.addAction(self.save_project_as_action)
@@ -80,12 +88,16 @@ class PaintingGuide(QMainWindow):
 
         self.export_project_to_image_action = QAction("Export project", self)
         self.export_project_to_image_action.setIcon(qta.icon("fa5s.file-export"))
+        self.export_project_to_image_action.setShortcut("Ctrl+E")
+
         self.export_project_to_image_action.triggered.connect(self.export_project_to_image)
 
         file_menu.addAction(self.export_project_to_image_action)
 
         self.export_project_to_image_as_action = QAction("Export project as...", self)
         self.export_project_to_image_as_action.setIcon(qta.icon("fa5s.file-export"))
+        self.export_project_to_image_as_action.setShortcut("Ctrl+Shift+E")
+
         self.export_project_to_image_as_action.triggered.connect(self.export_project_to_image_as)
 
         file_menu.addAction(self.export_project_to_image_as_action)
@@ -98,6 +110,8 @@ class PaintingGuide(QMainWindow):
 
         self.exit_action = QAction("Exit", self)
         self.exit_action.setIcon(qta.icon("fa5s.sign-out-alt"))
+        self.exit_action.setShortcut("Ctrl+X")
+
         self.exit_action.triggered.connect(self.close)
 
         file_menu.addAction(self.exit_action)
