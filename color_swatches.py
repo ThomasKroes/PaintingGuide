@@ -1,13 +1,9 @@
 import traceback
 
-from PyQt6.QtWidgets import QLabel, QGraphicsRectItem, QGraphicsLinearLayout, QGraphicsWidget
-from PyQt6.QtGui import QPainter, QBrush, QPen, QColor, QPainterPath
-from PyQt6.QtCore import Qt, QPointF, QMarginsF, QObject, pyqtSignal
+from PyQt6.QtCore import Qt, QPointF, QObject, pyqtSignal
 
-from graphics_widget import GraphicsWidget
 from color_swatch import ColorSwatch
 from color_swatch_item import ColorSwatchItem
-from color_pie_chart_item import ColorPieChartItem
 
 class ColorSwatches(QObject):
     swatches_changed = pyqtSignal()
@@ -15,7 +11,7 @@ class ColorSwatches(QObject):
     def __init__(self, project):
         super().__init__()
 
-        self.project        = project
+        self.project = project
 
     def set_color_swatch_size(self, color_swatch_size):
         """Set the color swatch size and re-create the color swatches."""
@@ -31,7 +27,7 @@ class ColorSwatches(QObject):
         if not self.project.reference_image:
             return
         
-        spacing = 100
+        spacing                         = 100
         swatch_size                     = ColorSwatchItem.swatch_size
         half_swatch_size                = swatch_size / 2
         reference_width                 = self.project.reference_image.size().width()
@@ -88,10 +84,6 @@ class ColorSwatches(QObject):
 
         try:
             pass
-            # dict["ColorSwatches"] = {
-            #     "Size": self.size,
-            #     "Spacing": self.spacing
-            # }
         except Exception as e:
             print(f"Unable to save color swatches to dictionary: {e}")
             traceback.print_exc()
@@ -100,9 +92,6 @@ class ColorSwatches(QObject):
         """Load from dictionary."""
         
         try:
-            # self.size       = dict["ColorSwatches"]["Size"]
-            # self.spacing    = dict["ColorSwatches"]["Spacing"]
-
             self.update()
         except Exception as e:
             print(f"Unable to load color swatches from dictionary: {e}")

@@ -1,15 +1,16 @@
-from PyQt6.QtWidgets import QLabel, QMessageBox, QGraphicsView, QGraphicsScene, QFileDialog, QApplication, QGraphicsGridLayout, QGraphicsLayoutItem, QGraphicsWidget
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QGraphicsView, QGraphicsScene, QFileDialog, QApplication, QGraphicsGridLayout, QGraphicsLayoutItem, QGraphicsWidget
 from PyQt6.QtGui import QPainter, QBrush, QPen, QColor, QPainterPath, QPixmap, QImage
 from PyQt6.QtCore import Qt, QRectF, QMarginsF, QObject, QPoint, QPointF, QSizeF
 
 import os, json, zipfile, tempfile, shutil, traceback
 
 from project_view import ProjectView
+from main_toolbar_widget import MainToolbarWidget
+from navigation_toolbar_widget import NavigationToolbarWidget
 from reference_item import ReferenceItem
 from color_swatches import ColorSwatches
 from color_swatch_item import ColorSwatchItem
 from color_samples import ColorSamples
-from color_sample_item import ColorSampleItem
 from color_sample_links import ColorSampleLinks
 
 class Project(QObject):
@@ -22,8 +23,6 @@ class Project(QObject):
         self.view                       = ProjectView(self)
         self.temp_dir_load              = tempfile.mkdtemp()
         self.temp_dir_save              = tempfile.mkdtemp()
-        self.root_widget                = QGraphicsWidget()
-        self.grid_layout                = QGraphicsGridLayout()
         self.reference_item             = ReferenceItem(self)
         self.color_swatches             = ColorSwatches(self)
         self.color_samples              = ColorSamples(self)
@@ -31,7 +30,20 @@ class Project(QObject):
         self.file_path                  = ""
         self.export_image_file_path     = ""
         self.color_dialog               = None
+        self.widget                     = QWidget()
+        self.layout                     = QVBoxLayout()
+        self.main_toolbar_widget        = MainToolbarWidget(self)
+        self.navigation_toolbar_widget  = NavigationToolbarWidget(self)
 
+        self.layout.setContentsMargins(0, 0, 0, 0)
+        self.layout.setSpacing(0)
+
+        self.layout.addWidget(self.main_toolbar_widget)
+        self.layout.addWidget(self.view, 1)
+        self.layout.addWidget(self.navigation_toolbar_widget)
+
+        self.widget.setLayout(self.layout)
+        
         self.scene.setItemIndexMethod(QGraphicsScene.ItemIndexMethod.NoIndex)
         
         self.view.setScene(self.scene)
@@ -61,7 +73,7 @@ class Project(QObject):
 
         swatches_size = 4 * ColorSwatchItem.swatch_spacing + 2 * ColorSwatchItem.swatch_size 
 
-        self.root_widget.resize(reference_image_size.toSizeF() + QSizeF(swatches_size, swatches_size))
+        # self.root_widget.resize(reference_image_size.toSizeF() + QSizeF(swatches_size, swatches_size))
 
     def open(self, file_path):
         """Open project from disk."""
@@ -135,13 +147,34 @@ class Project(QObject):
         print(f"Export image to: { self.export_image_file_path }")
 
         if self.export_image_file_path:
-            scene_rect = self.scene.itemsBoundingRect()
+            
+            scene_items = self.scene.items()
+            scene_rect = QRectF()  # Start with an empty rect
 
+            # Calculate the bounding rect for all items
+            for item in scene_items:
+                scene_rect |= item.sceneBoundingRect()
+
+            # Optionally, add a small padding to ensure all items are captured, even off-screen items
+            scene_rect.adjust(-10, -10, 10, 10)
+
+            # Debug: Print the computed scene rect and the scene's itemsBoundingRect for comparison
+            print("Calculated scene_rect:", scene_rect)
+            print("Scene itemsBoundingRect:", self.scene.itemsBoundingRect())
+
+            # Create an image to render the scene into
             image = QImage(scene_rect.size().toSize(), QImage.Format.Format_ARGB32)
-            image.fill(self.view.backgroundBrush().color()) 
+            image.fill(self.view.backgroundBrush().color())  # Fill the background with the view's background color
 
+            # Create a painter to render the scene
             painter = QPainter(image)
-            self.scene.render(painter, target=scene_rect)
+
+            # Apply the scene's transformation matrix to the painter
+            painter.setWorldTransform(self.view.transform())
+
+            # Ensure the painter is set to the correct region for rendering
+            # Render the scene into the image, using the full scene's bounding rect as the target
+            self.scene.render(painter, target=scene_rect, source=self.scene.itemsBoundingRect())
             painter.end()
 
             image.save(self.export_image_file_path)

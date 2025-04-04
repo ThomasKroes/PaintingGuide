@@ -143,7 +143,7 @@ class PaintingGuide(QMainWindow):
 
         project.open(file_path)
 
-        self.tab_widget.addTab(project.view, os.path.basename(project.reference_image_file_path))
+        self.tab_widget.addTab(project.widget, os.path.basename(project.reference_image_file_path))
 
         self.end_open_project()
 

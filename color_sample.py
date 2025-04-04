@@ -39,8 +39,10 @@ class ColorSample(QObject, DebugPrintMixin):
         self.project.color_swatches.swatches_changed.connect(self.update_candidate_links)
         self.position_changed.emit(self.position)
 
+        
         self.update_candidate_links()
-
+        self.set_position(position)
+        
     def __del__(self):
         """Remove color sample from tracking when deleted."""
 

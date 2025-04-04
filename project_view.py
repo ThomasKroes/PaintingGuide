@@ -1,17 +1,18 @@
-from PyQt6.QtWidgets import QApplication, QGraphicsView, QGraphicsScene, QGraphicsEllipseItem
-from PyQt6.QtGui import QWheelEvent, QMouseEvent, QBrush, QColor, QPainter, QPixmap
-from PyQt6.QtCore import Qt, QPointF, QRect
+from PyQt6.QtWidgets import QApplication, QGraphicsView
+from PyQt6.QtGui import QWheelEvent, QMouseEvent, QColor, QPainter, QPixmap
+from PyQt6.QtCore import Qt, QPointF, pyqtSignal
 
-from magic_lens_item import MagicLensItem
 from color_sample import ColorSample
 from view_context_menu import ViewContextMenu
+
 from common import *
 
 class ProjectView(QGraphicsView):
+    zoom_factor_changed = pyqtSignal(float)
+
     def __init__(self, project):
         super().__init__(project.scene)
         
-        #self.setDragMode(QGraphicsView.DragMode.NoDrag)
         self.setMouseTracking(True)
         self.setTransformationAnchor(QGraphicsView.ViewportAnchor.AnchorUnderMouse)
         self.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
@@ -27,6 +28,7 @@ class ProjectView(QGraphicsView):
         self.zoom_factor            = 1.15
         self.magic_lens_item        = None
         self.magnification_factor   = 2
+        self.zoom_level             = 100
 
         self.set_background_color(QColor(25, 25, 25))
 
@@ -69,24 +71,8 @@ class ProjectView(QGraphicsView):
 
             self.horizontalScrollBar().setValue(self.horizontalScrollBar().value() - int(delta.x()))
             self.verticalScrollBar().setValue(self.verticalScrollBar().value() - int(delta.y()))
-        else:
 
-            # if self.project.reference_image:
-            #     project_widget_proxy_local_pos = self.widget.project.widget_proxy.mapFromScene(self.mapToScene(event.pos()))
-            #     pixmap_position = self.widget.reference_label.mapFromParent(project_widget_proxy_local_pos)
-
-                
-
-            #     if self.magic_lens_item:
-            #         self.scene().removeItem(self.magic_lens_item)
-
-            #     self.magic_lens_item = MagicLensItem(self.project, pixmap_position)
-
-            #     self.scene().addItem(self.magic_lens_item)
-
-            #     self.update()
-
-            super().mouseMoveEvent(event)
+        super().mouseMoveEvent(event)
 
     def mouseReleaseEvent(self, event: QMouseEvent):
         """ Stop panning when the left mouse button is released."""
@@ -96,7 +82,55 @@ class ProjectView(QGraphicsView):
             self.setCursor(Qt.CursorShape.ArrowCursor)
         else:
             super().mouseReleaseEvent(event)
+    
+    def zoom_in(self):
+        """Zoom in by 10%."""
 
+        self.zoom_level *= 1.1
+        self.update_zoom()
+
+    def zoom_out(self):
+        """Zoom out by 10%."""
+
+        self.zoom_level *= 0.9
+        self.update_zoom()
+        
+    def reset_zoom(self):
+        """Reset zoom to 100%."""
+
+        self.zoom_level = 100
+        self.update_zoom()
+
+    def update_zoom(self):
+        """Update the zoom level based on the scene size and the current view size."""
+
+        # Calculate the bounding rectangle of the scene
+        scene_rect = self.scene().sceneRect()
+        
+        # Calculate the scale factor based on the view size and scene size
+        view_width = self.viewport().width()
+        view_height = self.viewport().height()
+
+        scale_x = view_width / scene_rect.width()  # Horizontal scale
+        scale_y = view_height / scene_rect.height()  # Vertical scale
+
+        # Apply the appropriate scaling (we use the smaller scale to fit the whole scene in view)
+        scale_factor = min(scale_x, scale_y)
+
+        # Set the scale factor as the zoom factor
+        self.setTransform(self.transform().scale(scale_factor, scale_factor))
+
+        # Update the zoom level based on the scale factor
+        self.zoom_level = int(scale_factor * 100)
+
+        self.zoom_factor_changed.emit(self.zoom_level)
+
+    def zoom_extents(self):
+        """Zoom the view to fit the entire scene."""
+
+        self.fitInView(self.scene().sceneRect(), Qt.KeepAspectRatio)
+        self.update_zoom()
+                
     def show_context_menu(self, pos):
         """Display a context menu at the cursor position."""
 

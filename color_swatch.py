@@ -89,8 +89,6 @@ class ColorSwatch(QObject):
 
             self.reset_color()
             
-            # self.color_swatch_item.set_selected(False)
-
     def set_color(self, color : QColor):
         """Set color."""
 
