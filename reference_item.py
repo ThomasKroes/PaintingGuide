@@ -2,13 +2,14 @@ from PyQt6.QtGui import QPixmap, QMouseEvent
 from PyQt6.QtCore import Qt, QRectF, QMarginsF
 
 from graphics_widget import GraphicsWidget
-from color_swatch_item import ColorSwatchItem
+from drop_shadow_mixin import DropShadowMixin
 
 from styling import *
 
-class ReferenceItem(GraphicsWidget):
+class ReferenceItem(GraphicsWidget, DropShadowMixin):
     def __init__(self, project):
-        super().__init__()
+        GraphicsWidget.__init__(self)
+        DropShadowMixin.__init__(self)
         
         self.setZValue(-100)
 

@@ -27,9 +27,9 @@ def get_item_pen(item : QGraphicsItem):
 
     if isinstance(item, ColorSampleItem):
         if item.selected:
-            return QPen(QPen(palette.color(QPalette.ColorGroup.Normal, QPalette.ColorRole.Text), 12))
+            return QPen(QPen(palette.color(QPalette.ColorGroup.Normal, QPalette.ColorRole.Text), 16))
         
-        return QPen(palette.color(QPalette.ColorGroup.Normal, QPalette.ColorRole.Text), 6)
+        return QPen(palette.color(QPalette.ColorGroup.Normal, QPalette.ColorRole.Text), 8)
     
     if isinstance(item, ColorSwatchItem):
         if item.selected:

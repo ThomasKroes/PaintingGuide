@@ -73,20 +73,12 @@ class ColorSampleLink(QObject, DebugPrintMixin):
 
         self.distance = (QVector2D(self.color_sample.anchor) - QVector2D(self.color_swatch.anchor)).length()
 
-        # if self.active:
-        #     print(qpointf_to_string(self.color_sample.anchor), qpointf_to_string(self.color_sample.color_sample_item.pos()), qpointf_to_string(self.color_swatch.anchor), qpointf_to_string(self.color_swatch.color_swatch_item.pos()))
-
     def update_line(self):
         """Updates the line segment."""
 
         self.color_sample_link_item.set_line(QLineF(self.color_sample.anchor, self.color_swatch.anchor))
 
         self.update_distance()
-
-        dot = QGraphicsEllipseItem(self.color_swatch.anchor.x(), self.color_swatch.anchor.y(), 10, 10)
-        dot.setBrush(Qt.GlobalColor.red)
-
-        self.color_sample.project.scene.addItem(dot)
 
     def set_visible(self, visible : bool):
         """Set link visibility"""

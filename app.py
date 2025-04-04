@@ -25,13 +25,20 @@ class PaintingGuide(QMainWindow):
 
         self.setCentralWidget(self.tab_widget)
 
-        self.pixmap             = None
-        self.projects           = []
-        
+        self.pixmap     = None
+        self.projects   = []
+        self.menu_bar   = None
+
         app.opening_project    = False
         app.saving_project     = False
 
-        self.create_menu_bar()   
+    def showEvent(self, a0):
+        super().showEvent(a0)
+
+        if self.menu_bar:
+            return
+        
+        self.create_menu_bar()
         self.update_actions_read_only()
 
         self.tab_widget.currentChanged.connect(self.update_actions_read_only)
@@ -39,9 +46,9 @@ class PaintingGuide(QMainWindow):
     def create_menu_bar(self):
         """Creates the main menu bar."""
 
-        menu_bar = self.menuBar()
+        self.menu_bar = self.menuBar()
 
-        file_menu = menu_bar.addMenu("File")
+        file_menu = self.menu_bar.addMenu("File")
         
         self.import_reference_image_action = QAction("Import reference image", self)
         self.import_reference_image_action.triggered.connect(self.import_reference_image)

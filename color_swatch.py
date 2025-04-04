@@ -19,7 +19,7 @@ class ColorSwatch(QObject):
         self.anchor_alignment   = anchor_alignment
         self.position           = QPointF()
         self.anchor             = QPointF()
-        self.color              = QColor(40, 40, 40)
+        self.color              = QColor(25, 25, 25)
         self.active             = False
         self.color_sample_link  = None
         self.color_swatch_item  = ColorSwatchItem(self)
@@ -104,4 +104,4 @@ class ColorSwatch(QObject):
     def reset_color(self):
         """Reset color to default."""
 
-        self.set_color(QColor(20, 20, 20))
+        self.set_color(QColor(25, 25, 25))

@@ -3,18 +3,21 @@ from PyQt6.QtCore import Qt, QRectF, QMarginsF, QSizeF, QPointF
 from PyQt6.QtWidgets import QGraphicsItem
 
 from graphics_widget import GraphicsWidget
+from drop_shadow_mixin import DropShadowMixin
+
 from styling import *
 
 from common import *
 
-class ColorSwatchItem(GraphicsWidget):
+class ColorSwatchItem(GraphicsWidget, DropShadowMixin):
     swatch_size     = 250
     swatch_spacing  = swatch_size / 5
     margin          = 20
     items           = list()
 
     def __init__(self, color_swatch):
-        super().__init__()
+        GraphicsWidget.__init__(self)
+        DropShadowMixin.__init__(self)
 
         ColorSwatchItem.items.append(self)
         
@@ -55,3 +58,4 @@ class ColorSwatchItem(GraphicsWidget):
         painter.setBrush(QBrush(self.color_swatch.color))
         painter.setPen(get_item_pen(self))
         painter.drawRoundedRect(self.boundingRect(), self.corner_radius, self.corner_radius)
+
