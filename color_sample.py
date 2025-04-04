@@ -4,7 +4,6 @@ from PyQt6.QtGui import QColor
 from PyQt6.QtCore import QObject, QPointF, pyqtSignal
 
 from color_sample_item import ColorSampleItem
-from color_sample_shadow_item import ColorSampleShadowItem
 from color_sample_link import ColorSampleLink
 from color_swatch import ColorSwatch
 
@@ -17,9 +16,8 @@ class ColorSample(QObject, DebugPrintMixin):
     position_changed    = pyqtSignal(QPointF)
     anchor_changed      = pyqtSignal(QPointF)
     color_changed       = pyqtSignal(QColor)
-    selected_changed    = pyqtSignal(bool)
     active_changed      = pyqtSignal(bool)
-    
+
     def __init__(self, project, position=QPointF()):
         QObject.__init__(self)
         DebugPrintMixin.__init__(self)
@@ -35,7 +33,6 @@ class ColorSample(QObject, DebugPrintMixin):
         self.active                     = False
         self.color_sample_link          = None
         self.color_sample_item          = ColorSampleItem(self)
-        self.color_sample_shadow_item   = ColorSampleShadowItem(self)
         
         self.project.scene.addItem(self.color_sample_item)
 
@@ -119,11 +116,7 @@ class ColorSample(QObject, DebugPrintMixin):
         
         self.selected = selected
 
-        self.selected_changed.emit(self.selected)
-        
         self.color_sample_item.selected = selected
-
-        self.print(f"Position: { qpointf_to_string(self.position) }")
 
     def activate(self, color_sample_link):
         """Activate the color sample."""

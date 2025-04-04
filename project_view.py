@@ -47,8 +47,6 @@ class ProjectView(QGraphicsView):
     def mousePressEvent(self, event: QMouseEvent):
         """ Start panning only if Alt key is pressed."""
 
-        print("mouseMoveEvent", self.mapToScene(event.pos()))
-
         if event.button() == Qt.MouseButton.LeftButton:
             if QApplication.keyboardModifiers() & Qt.KeyboardModifier.AltModifier:
                 self.is_panning            = True

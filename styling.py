@@ -21,7 +21,6 @@ def get_item_pen(item : QGraphicsItem):
     from color_sample_item import ColorSampleItem
     from color_swatch import ColorSwatchItem
     from reference_item import ReferenceItem
-    from color_sample_link_item import ColorSampleLinkItem
 
     palette = QApplication.instance().palette()
 
@@ -42,12 +41,6 @@ def get_item_pen(item : QGraphicsItem):
 
     if isinstance(item, ReferenceItem):
         return QPen(QPen(palette.color(QPalette.ColorGroup.Normal, QPalette.ColorRole.Text), 5))
-    
-    if isinstance(item, ColorSampleLinkItem):
-        if item.selected:
-            return QPen(QPen(palette.color(QPalette.ColorGroup.Normal, QPalette.ColorRole.Text), 12))
-        
-        return QPen(palette.color(QPalette.ColorGroup.Normal, QPalette.ColorRole.Text), 6)
     
     print("No matching pen found...")
 

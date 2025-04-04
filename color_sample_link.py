@@ -3,7 +3,6 @@ from PyQt6.QtCore import QObject, QLineF, pyqtSignal, Qt
 from PyQt6.QtWidgets import QGraphicsEllipseItem
 
 from debug_print_mixin import DebugPrintMixin
-from color_sample_link_item import ColorSampleLinkItem
 from common import *
 
 class ColorSampleLink(QObject, DebugPrintMixin):
@@ -20,20 +19,16 @@ class ColorSampleLink(QObject, DebugPrintMixin):
 
         self.set_print_index(ColorSampleLink.color_sample_links.index(self) + 1)
 
-        self.visible                = False
-        self.active                 = False
-        self.color_sample           = color_sample
-        self.color_swatch           = color_swatch
-        self.distance               = 0
-        self.color_sample_link_item = ColorSampleLinkItem(self)
-        self.verbose                = True
+        self.visible        = False
+        self.active         = False
+        self.color_sample   = color_sample
+        self.color_swatch   = color_swatch
+        self.distance       = 0
+        self.verbose        = True
 
-        self.color_sample.project.scene.addItem(self.color_sample_link_item)
-        
         self.color_sample.anchor_changed.connect(self.update_line)
         self.color_swatch.anchor_changed.connect(self.update_line)
         self.color_sample.color_changed.connect(self.update_color_swatch_color)
-        self.color_sample.selected_changed.connect(self.color_sample_selected_changed)
 
         self.update_line()
     
@@ -49,24 +44,13 @@ class ColorSampleLink(QObject, DebugPrintMixin):
 
         self.print("Remove")
 
-        self.color_sample_link_item.remove()
-
         self.color_sample.anchor_changed.disconnect(self.update_line)
         self.color_swatch.anchor_changed.disconnect(self.update_line)
         self.color_sample.color_changed.disconnect(self.update_color_swatch_color)
         
         self.color_swatch.deactivate()
         
-        del self.color_sample_link_item
         del self
-
-    def color_sample_selected_changed(self, selected : bool):
-        """Invoked when the color sample is selected or de-selected."""
-
-        self.color_sample_link_item.set_selected(selected)
-        
-        # if self.active:
-        #     self.color_swatch.color_swatch_item.set_selected(selected)
 
     def update_distance(self):
         """Computes the distance between the color sample and the color swatch."""
@@ -75,8 +59,6 @@ class ColorSampleLink(QObject, DebugPrintMixin):
 
     def update_line(self):
         """Updates the line segment."""
-
-        self.color_sample_link_item.set_line(QLineF(self.color_sample.anchor, self.color_swatch.anchor))
 
         self.update_distance()
 
