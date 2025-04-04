@@ -2,7 +2,7 @@ import traceback
 
 from PyQt6.QtWidgets import QLabel, QGraphicsRectItem, QGraphicsLinearLayout, QGraphicsWidget
 from PyQt6.QtGui import QPainter, QBrush, QPen, QColor, QPainterPath
-from PyQt6.QtCore import Qt, QRectF, QMarginsF, QObject, pyqtSignal
+from PyQt6.QtCore import Qt, QPointF, QMarginsF, QObject, pyqtSignal
 
 from graphics_widget import GraphicsWidget
 from color_swatch import ColorSwatch
@@ -17,36 +17,6 @@ class ColorSwatches(QObject):
 
         self.project        = project
 
-        self.left_widget    = GraphicsWidget()
-        self.right_widget   = GraphicsWidget()
-        self.top_widget     = GraphicsWidget()
-        self.bottom_widget  = GraphicsWidget()
-
-        self.left_layout    = QGraphicsLinearLayout(Qt.Orientation.Vertical)
-        self.right_layout   = QGraphicsLinearLayout(Qt.Orientation.Vertical)
-        self.top_layout     = QGraphicsLinearLayout(Qt.Orientation.Horizontal)
-        self.bottom_layout  = QGraphicsLinearLayout(Qt.Orientation.Horizontal)
-
-        self.left_layout.setSpacing(ColorSwatchItem.swatch_spacing)
-        self.right_layout.setSpacing(ColorSwatchItem.swatch_spacing)
-        self.top_layout.setSpacing(ColorSwatchItem.swatch_spacing)
-        self.bottom_layout.setSpacing(ColorSwatchItem.swatch_spacing)
-
-        self.left_layout.setContentsMargins(ColorSwatchItem.swatch_spacing, ColorSwatchItem.swatch_spacing, ColorSwatchItem.swatch_spacing, ColorSwatchItem.swatch_spacing)
-        self.right_layout.setContentsMargins(ColorSwatchItem.swatch_spacing, ColorSwatchItem.swatch_spacing, ColorSwatchItem.swatch_spacing, ColorSwatchItem.swatch_spacing)
-        self.top_layout.setContentsMargins(ColorSwatchItem.swatch_spacing, ColorSwatchItem.swatch_spacing, ColorSwatchItem.swatch_spacing, ColorSwatchItem.swatch_spacing)
-        self.bottom_layout.setContentsMargins(ColorSwatchItem.swatch_spacing, ColorSwatchItem.swatch_spacing, ColorSwatchItem.swatch_spacing, ColorSwatchItem.swatch_spacing)
-
-        self.left_widget.setLayout(self.left_layout)
-        self.right_widget.setLayout(self.right_layout)
-        self.top_widget.setLayout(self.top_layout)
-        self.bottom_widget.setLayout(self.bottom_layout)
-
-        self.project.grid_layout.addItem(self.left_widget, 1, 0)
-        self.project.grid_layout.addItem(self.right_widget, 1, 2)
-        self.project.grid_layout.addItem(self.top_widget, 0, 1)
-        self.project.grid_layout.addItem(self.bottom_widget, 2, 1)
-
     def set_color_swatch_size(self, color_swatch_size):
         """Set the color swatch size and re-create the color swatches."""
 
@@ -58,35 +28,54 @@ class ColorSwatches(QObject):
 
     def update(self):
 
-        self.clear_layout(self.left_layout)
-        self.clear_layout(self.right_layout)
-        self.clear_layout(self.top_layout)
-        self.clear_layout(self.bottom_layout)
-
         if not self.project.reference_image:
             return
         
-        color_swatch_size               = ColorSwatchItem.swatch_size + 2 * ColorSwatchItem.swatch_spacing
-        number_of_swatches_horizontal   = self.project.reference_image.size().width() // int(color_swatch_size)
-        number_of_swatches_vertical     = self.project.reference_image.size().height() // int(color_swatch_size)
+        spacing = 100
+        swatch_size                     = ColorSwatchItem.swatch_size
+        half_swatch_size                = swatch_size / 2
+        reference_width                 = self.project.reference_image.size().width()
+        reference_height                = self.project.reference_image.size().height()
+        number_of_swatches_horizontal   = reference_width // int(swatch_size + spacing)
+        number_of_swatches_vertical     = reference_height // int(swatch_size + spacing)
+        
+        reference_image = self.project.reference_image
 
-        def add_swatches_to_layout(layout, number_of_swatches, anchor_alignment):
-            layout.addStretch(1)
+        def add_swatches(number_of_swatches, orientation):
+            total_spacing   = spacing * max(1, number_of_swatches - 1)
+            total_swatches  = number_of_swatches * swatch_size
 
-            for swatch_index in range(number_of_swatches):
-                color_swatch = ColorSwatch(self.project, anchor_alignment)
-                layout.addItem(color_swatch.color_swatch_item)
+            if orientation == Qt.Orientation.Vertical:
+                offset = half_swatch_size + (reference_image.height() - total_spacing - total_swatches) / 2
 
-            layout.addStretch(1)
-            layout.invalidate()
+                for swatch_index in range(number_of_swatches):
+                    left_swatch     = ColorSwatch(self.project, Qt.AlignmentFlag.AlignRight)
+                    right_swatch    = ColorSwatch(self.project, Qt.AlignmentFlag.AlignLeft)
+                    position_y      = offset + swatch_index * (swatch_size + spacing)
 
-        self.top_widget.update()
+                    left_swatch.set_position(QPointF(-half_swatch_size - spacing, position_y))
+                    right_swatch.set_position(QPointF(reference_width + spacing + half_swatch_size, position_y))
 
-        add_swatches_to_layout(self.left_layout, number_of_swatches_vertical, Qt.AlignmentFlag.AlignRight)
-        add_swatches_to_layout(self.right_layout, number_of_swatches_vertical, Qt.AlignmentFlag.AlignLeft)
-        add_swatches_to_layout(self.top_layout, number_of_swatches_horizontal, Qt.AlignmentFlag.AlignBottom)
-        add_swatches_to_layout(self.bottom_layout, number_of_swatches_horizontal, Qt.AlignmentFlag.AlignTop)
+                    self.project.scene.addItem(left_swatch.color_swatch_item)
+                    self.project.scene.addItem(right_swatch.color_swatch_item)
+                
+            if orientation == Qt.Orientation.Horizontal:
+                offset = half_swatch_size + (reference_image.width() - total_spacing - total_swatches) / 2
 
+                for swatch_index in range(number_of_swatches):
+                    top_swatch      = ColorSwatch(self.project, Qt.AlignmentFlag.AlignBottom)
+                    bottom_swatch   = ColorSwatch(self.project, Qt.AlignmentFlag.AlignTop)
+                    position_x      = offset + swatch_index * (swatch_size + spacing)
+
+                    top_swatch.set_position(QPointF(position_x, -spacing - half_swatch_size))
+                    bottom_swatch.set_position(QPointF(position_x, reference_height + spacing + half_swatch_size))
+
+                    self.project.scene.addItem(top_swatch.color_swatch_item)
+                    self.project.scene.addItem(bottom_swatch.color_swatch_item)
+
+        add_swatches(number_of_swatches_horizontal, Qt.Orientation.Horizontal)
+        add_swatches(number_of_swatches_vertical, Qt.Orientation.Vertical)
+        
     def clear_layout(self, layout):
         """Remove all items from the layout."""
 

@@ -1,6 +1,6 @@
-from PyQt6.QtWidgets import QLabel, QGraphicsEllipseItem, QGraphicsItem, QGraphicsLineItem, QApplication, QInputDialog, QVBoxLayout, QDoubleSpinBox, QDialogButtonBox
+from PyQt6.QtWidgets import QGraphicsDropShadowEffect
 from PyQt6.QtGui import QPainter, QBrush, QPen, QColor, QPainterPath, QVector2D, QPalette
-from PyQt6.QtCore import Qt, QRectF, QMarginsF, QObject, QPoint, QSizeF, QPointF, QLineF, QTimer
+from PyQt6.QtCore import QPointF, QLineF, QTimer
 
 def qcolor_to_dict(color : QColor):
     """Get a dictionary from a QColor."""
@@ -50,3 +50,9 @@ def qpointf_from_dict(dict : dict):
     except:
         return QPointF()
 
+def add_drop_shadow(item, offset=QPointF(2, 2), blur_radius=10, color=QColor(0, 0, 0, 160)):
+    shadow = QGraphicsDropShadowEffect()
+    shadow.setBlurRadius(blur_radius)
+    shadow.setOffset(offset)
+    shadow.setColor(color)
+    item.setGraphicsEffect(shadow)

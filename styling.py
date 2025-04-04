@@ -23,26 +23,31 @@ def get_item_pen(item : QGraphicsItem):
     from reference_item import ReferenceItem
     from color_sample_link_item import ColorSampleLinkItem
 
+    palette = QApplication.instance().palette()
+
     if isinstance(item, ColorSampleItem):
-        if item.isSelected():
-            return QPen(QPen(QApplication.instance().palette().color(QPalette.ColorGroup.Normal, QPalette.ColorRole.Text), 12))
+        if item.selected:
+            return QPen(QPen(palette.color(QPalette.ColorGroup.Normal, QPalette.ColorRole.Text), 12))
         
-        return QPen(QApplication.instance().palette().color(QPalette.ColorGroup.Normal, QPalette.ColorRole.Text), 6)
+        return QPen(palette.color(QPalette.ColorGroup.Normal, QPalette.ColorRole.Text), 6)
     
     if isinstance(item, ColorSwatchItem):
-        if item.isSelected():
-            return QPen(QPen(QApplication.instance().palette().color(QPalette.ColorGroup.Normal, QPalette.ColorRole.Text), 12))
+        if item.selected:
+            return QPen(QPen(palette.color(QPalette.ColorGroup.Normal, QPalette.ColorRole.Text), 12))
         
         if item.color_swatch.active:
-            return QPen(QPen(QApplication.instance().palette().color(QPalette.ColorGroup.Normal, QPalette.ColorRole.Text), 12))
+            return QPen(QPen(palette.color(QPalette.ColorGroup.Normal, QPalette.ColorRole.Text), 6))
         
-        return QPen(QPen(QApplication.instance().palette().color(QPalette.ColorGroup.Normal, QPalette.ColorRole.Dark), 5))
+        return QPen(QPen(palette.color(QPalette.ColorGroup.Normal, QPalette.ColorRole.Mid), 6))
 
     if isinstance(item, ReferenceItem):
-        return QPen(QPen(QApplication.instance().palette().color(QPalette.ColorGroup.Normal, QPalette.ColorRole.Text), 5))
+        return QPen(QPen(palette.color(QPalette.ColorGroup.Normal, QPalette.ColorRole.Text), 5))
     
     if isinstance(item, ColorSampleLinkItem):
-        return QPen(QPen(QApplication.instance().palette().color(QPalette.ColorGroup.Normal, QPalette.ColorRole.Text), 12))
+        if item.selected:
+            return QPen(QPen(palette.color(QPalette.ColorGroup.Normal, QPalette.ColorRole.Text), 12))
+        
+        return QPen(palette.color(QPalette.ColorGroup.Normal, QPalette.ColorRole.Text), 6)
     
     print("No matching pen found...")
 

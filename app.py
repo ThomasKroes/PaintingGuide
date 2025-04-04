@@ -1,7 +1,7 @@
 import sys
 import os
 
-from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QFileDialog, QMessageBox, QGridLayout, QHBoxLayout, QVBoxLayout, QWidget, QSpacerItem, QSizePolicy, QTabWidget, QToolBar
+from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QFileDialog, QMessageBox, QGridLayout, QHBoxLayout, QMenu, QWidget, QSpacerItem, QSizePolicy, QTabWidget, QToolBar
 from PyQt6.QtGui import QAction, QPixmap, QColor
 from PyQt6.QtCore import Qt, QSettings, QSize
 
@@ -9,6 +9,7 @@ import qtawesome as qta
 
 from color_swatch_item import ColorSwatchItem
 from project import Project
+from recent_projects_menu import RecentProjectsMenu
 
 class PaintingGuide(QMainWindow):
     def __init__(self):
@@ -24,8 +25,11 @@ class PaintingGuide(QMainWindow):
 
         self.setCentralWidget(self.tab_widget)
 
-        self.pixmap     = None
-        self.projects   = []
+        self.pixmap             = None
+        self.projects           = []
+        
+        app.opening_project    = False
+        app.saving_project     = False
 
         self.create_menu_bar()   
         self.update_actions_read_only()
@@ -80,6 +84,10 @@ class PaintingGuide(QMainWindow):
         file_menu.addAction(self.export_project_to_image_as_action)
 
         file_menu.addSeparator()
+        
+        file_menu.addMenu(RecentProjectsMenu(self))
+
+        file_menu.addSeparator()
 
         self.exit_action = QAction("Exit", self)
         self.exit_action.setIcon(qta.icon("fa5s.sign-out-alt"))
@@ -112,27 +120,35 @@ class PaintingGuide(QMainWindow):
 
         self.tab_widget.addTab(self.projects[-1].view, os.path.basename(reference_image_file_path))
 
-    def open_project(self):
+    def open_project(self, file_path):
         """Open a project from disk."""
 
-        project_file_path, _ = QFileDialog.getOpenFileName(self, "Open Project", app.settings.value("Directories/ProjectDir", os.path.expanduser("~")), "Painting Guide Project (*.pgp)")
+        self.begin_open_project()
+        
+        if not file_path:
+            file_path, _ = QFileDialog.getOpenFileName(self, "Open Project", app.settings.value("Directories/ProjectDir", os.path.expanduser("~")), "Painting Guide Project (*.pgp)")
 
-        if project_file_path:
-            app.settings.setValue("Directories/ProjectDir", os.path.dirname(project_file_path))
+        app.settings.setValue("Directories/ProjectDir", os.path.dirname(file_path))
 
-            project = Project()
+        project = Project()
 
-            self.projects.append(project)
+        self.projects.append(project)
 
-            project.load(project_file_path)
+        project.open(file_path)
 
-            self.tab_widget.addTab(project.view, os.path.basename(project.reference_image_file_path))
+        self.tab_widget.addTab(project.view, os.path.basename(project.reference_image_file_path))
+
+        self.end_open_project()
 
     def save_project(self):
         """Saves the current project to disk."""
 
+        self.begin_save_project()
+
         if self.tab_widget.currentIndex() >= 0:
             self.projects[self.tab_widget.currentIndex()].save()
+
+        self.end_save_project()
 
     def save_project_as(self):
         """Saves the current project to disk in a picked location."""
@@ -151,6 +167,30 @@ class PaintingGuide(QMainWindow):
 
         if self.tab_widget.currentIndex() >= 0:
             self.projects[self.tab_widget.currentIndex()].export_to_image_as()
+
+    def begin_open_project(self):
+        """Begin opening a project """
+
+        print("Begin open project")
+        self.opening_project = True
+
+    def end_open_project(self):
+        """End opening a project """
+
+        print("End open project")
+        self.opening_project = False
+
+    def begin_save_project(self):
+        """Begin saving a project """
+
+        print("Begin save project")
+        self.saving_project = True
+
+    def end_save_project(self):
+        """End saving a project """
+
+        print("End save project")
+        self.saving_project = False
 
     def update_actions_read_only(self):
         """Updates the read-only state of various actions."""

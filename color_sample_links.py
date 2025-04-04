@@ -1,19 +1,27 @@
 import traceback
 
-from PyQt6.QtGui import QVector2D
 from PyQt6.QtCore import QObject
+from PyQt6.QtGui import QVector2D
+from PyQt6.QtWidgets import QApplication
 
+from debug_print_mixin import DebugPrintMixin
 from color_sample import ColorSample
 from color_sample_link import ColorSampleLink
 
-class ColorSampleLinks(QObject):
+class ColorSampleLinks(QObject, DebugPrintMixin):
     def __init__(self, project):
-        super().__init__()
+        QObject.__init__(self)
+        DebugPrintMixin.__init__(self)
 
         self.project = project
 
-    def choose_links(self):
+    def choose_links(self, force=False):
         """Choose best links from the list of candidate links."""
+
+        if QApplication.instance().opening_project and not force:
+            return
+        
+        self.print("Choose links...")
 
         for link in ColorSampleLink.color_sample_links:
             link.deactivate()
@@ -24,6 +32,13 @@ class ColorSampleLinks(QObject):
             links           = [link for link in inactive_links if link.color_sample is color_sample]
 
             links.sort(key=lambda item: item.distance)
+            
+            distances = list()
+
+            for l in links:
+                distances.append(f"{ '{:.1f}'.format(l.distance)}")
+            
+            # print(distances, len(links))
 
             if links:
                 links[0].activate()

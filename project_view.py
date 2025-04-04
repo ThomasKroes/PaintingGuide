@@ -12,9 +12,11 @@ class ProjectView(QGraphicsView):
         super().__init__(project.scene)
         
         #self.setDragMode(QGraphicsView.DragMode.NoDrag)
+        self.setMouseTracking(True)
         self.setTransformationAnchor(QGraphicsView.ViewportAnchor.AnchorUnderMouse)
         self.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
         self.setRenderHint(QPainter.RenderHint.Antialiasing)
+        
         # self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         
         # self.customContextMenuRequested.connect(self.show_context_menu)
@@ -45,6 +47,8 @@ class ProjectView(QGraphicsView):
     def mousePressEvent(self, event: QMouseEvent):
         """ Start panning only if Alt key is pressed."""
 
+        print("mouseMoveEvent", self.mapToScene(event.pos()))
+
         if event.button() == Qt.MouseButton.LeftButton:
             if QApplication.keyboardModifiers() & Qt.KeyboardModifier.AltModifier:
                 self.is_panning            = True
@@ -53,7 +57,7 @@ class ProjectView(QGraphicsView):
                 self.setCursor(Qt.CursorShape.ClosedHandCursor)
 
             if QApplication.keyboardModifiers() & Qt.KeyboardModifier.ControlModifier:
-                ColorSample.create_from_scene_position(self.project, self.mapToScene(event.pos()).toPoint())
+                ColorSample.create_from_scene_position(self.project, self.mapToScene(event.pos()))
 
         super().mousePressEvent(event)
 

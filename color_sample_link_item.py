@@ -1,10 +1,11 @@
 import traceback
 
 from PyQt6.QtWidgets import QLabel, QGraphicsEllipseItem, QGraphicsItem, QGraphicsLineItem, QApplication, QGraphicsOpacityEffect
-from PyQt6.QtGui import QPainter, QBrush, QPen, QColor, QPainterPath, QVector2D, QPalette
-from PyQt6.QtCore import Qt, QRectF, QMarginsF, QObject, QPoint, QSizeF, QPointF, QLineF, QTimer, QPropertyAnimation, QVariantAnimation
+from PyQt6.QtGui import QPainter, QBrush, QPen, QColor, QPainterPath, QVector2D, QPalette, QFont
+from PyQt6.QtCore import Qt, QRectF, QMarginsF, QObject, QPoint, QSizeF, QPointF, QLineF
 
 from graphics_widget import GraphicsWidget
+from common import *
 from styling import *
 
 class ColorSampleLinkItem(GraphicsWidget):
@@ -15,24 +16,17 @@ class ColorSampleLinkItem(GraphicsWidget):
         self.line               = QLineF()
         self.verbose            = True
 
+        self.setFlag(GraphicsWidget.GraphicsItemFlag.ItemIsSelectable)
+
         self.color_sample_link.visible_changed.connect(self.update_visibility)
 
-        self.setFlag(self.ItemIsSelectable)
-        self.setFlag(self.ItemIsMovable)
-
         self.setOpacity(0)
-        self.setZValue(0.1)
-
-    def __debug_print__(self, message : str):
-        """Print a nicely formatted debug message."""
-
-        if self.verbose:
-            print(f"{ __class__.__name__ }: { message }")
-
+        self.setZValue(3)
+        
     def remove(self):
         """Remove the color sample link item."""
 
-        self.__debug_print__("Remove")
+        self.print("Remove")
 
         self.color_sample_link.color_sample.project.scene.removeItem(self)
 
@@ -59,6 +53,12 @@ class ColorSampleLinkItem(GraphicsWidget):
 
         self.update()
 
+    def itemChange(self, change, value):
+        if change == QGraphicsEllipseItem.GraphicsItemChange.ItemSelectedHasChanged:
+            self.color_sample_link.color_sample.set_selected(self.isSelected())
+            
+        return super().itemChange(change, value)
+    
     def boundingRect(self):
         """Return the bounding rectangle for the item."""
 

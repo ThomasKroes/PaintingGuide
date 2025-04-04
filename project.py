@@ -33,14 +33,10 @@ class Project(QObject):
         self.color_dialog               = None
 
         self.scene.setItemIndexMethod(QGraphicsScene.ItemIndexMethod.NoIndex)
-
-        self.grid_layout.setSpacing(0)
-        self.grid_layout.addItem(self.reference_item, 1, 1)
-        self.root_widget.setLayout(self.grid_layout)
-
-        self.scene.addItem(self.root_widget)
-
+        
         self.view.setScene(self.scene)
+
+        self.scene.addItem(self.reference_item)
         
         self.load_reference_image(reference_image_file_path)
         
@@ -67,11 +63,11 @@ class Project(QObject):
 
         self.root_widget.resize(reference_image_size.toSizeF() + QSizeF(swatches_size, swatches_size))
 
-    def load(self, file_path):
-        """Load project from disk."""
+    def open(self, file_path):
+        """Open project from disk."""
 
         try:
-            print(f"Load project from: { file_path }")
+            print(f"Open project from: { file_path }")
 
             with zipfile.ZipFile(file_path, 'r') as zip_file:
                 zip_file.extractall(self.temp_dir_load)
@@ -83,6 +79,14 @@ class Project(QObject):
             self.load_reference_image(reference_image_file_path)
 
             self.file_path = file_path
+
+            app_settings = QApplication.instance().settings
+
+            recent_projects = app_settings.value("Projects/Recent", [], type=list)
+
+            recent_projects.append(self.file_path)
+
+            app_settings.setValue("Projects/Recent", list(dict.fromkeys(recent_projects)))
         except FileNotFoundError:
             print(f"Error: The zip file { file_path } was not found.")
         except zipfile.BadZipFile:
@@ -106,12 +110,14 @@ class Project(QObject):
 
         zip_input_file_paths = ["Reference.jpg", "Project.json"]
 
+        app_settings = QApplication.instance().settings
+
         if self.file_path:
             with zipfile.ZipFile(self.file_path, 'w', zipfile.ZIP_DEFLATED) as zip_file:
                 for zip_input_file_name in zip_input_file_paths:
                     zip_file.write(os.path.join(self.temp_dir_save, zip_input_file_name), arcname=os.path.basename(zip_input_file_name))
 
-            QApplication.instance().settings.setValue("Directories/ProjectDir", os.path.dirname(self.file_path))
+            app_settings.setValue("Directories/ProjectDir", os.path.dirname(self.file_path))
 
     def save_as(self):
         """Save to disk in a picked location."""
@@ -169,6 +175,8 @@ class Project(QObject):
             self.color_swatches.load_from_dict(dict)
             self.color_samples.load_from_dict(dict)
             self.color_sample_links.load_from_dict(dict)
+
+            self.color_sample_links.choose_links(True)
         except Exception as e:
             print(f"Cannot load project from dictionary: {e}")
             traceback.print_exc()

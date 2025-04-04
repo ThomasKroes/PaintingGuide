@@ -19,9 +19,9 @@ class ColorSwatch(QObject):
         self.anchor_alignment   = anchor_alignment
         self.position           = QPointF()
         self.anchor             = QPointF()
-        self.color              = QColor(60, 60, 60)
-        self.color_swatch_item  = ColorSwatchItem(self)
+        self.color              = QColor(40, 40, 40)
         self.active             = False
+        self.color_swatch_item  = ColorSwatchItem(self)
 
     def __del__(self):
         """Remove color swatch from tracking when deleted."""
@@ -38,6 +38,23 @@ class ColorSwatch(QObject):
         self.position = position
 
         self.position_changed.emit(self.position)
+
+        anchor_offset = QPointF()
+        half_size = ColorSwatchItem.swatch_size / 2
+
+        if self.anchor_alignment == Qt.AlignmentFlag.AlignLeft:
+            anchor_offset = QPointF(-half_size, 0)
+
+        if self.anchor_alignment == Qt.AlignmentFlag.AlignRight:
+            anchor_offset = QPointF(half_size, 0)
+
+        if self.anchor_alignment == Qt.AlignmentFlag.AlignTop:
+            anchor_offset = QPointF(0, -half_size)
+
+        if self.anchor_alignment == Qt.AlignmentFlag.AlignBottom:
+            anchor_offset = QPointF(0, half_size)
+
+        self.set_anchor(self.position + anchor_offset)
 
     def set_anchor(self, anchor : QPointF):
         """Set anchor in scene coordinates."""
@@ -67,6 +84,8 @@ class ColorSwatch(QObject):
 
             self.reset_color()
             
+            # self.color_swatch_item.set_selected(False)
+
     def set_color(self, color : QColor):
         """Set color."""
 
@@ -80,4 +99,4 @@ class ColorSwatch(QObject):
     def reset_color(self):
         """Reset color to default."""
 
-        self.set_color(QColor(60, 60, 60))
+        self.set_color(QColor(20, 20, 20))

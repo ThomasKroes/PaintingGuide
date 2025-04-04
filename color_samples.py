@@ -1,19 +1,14 @@
 import traceback
 
-from PyQt6.QtWidgets import QLabel, QGraphicsRectItem, QGraphicsLinearLayout, QGraphicsWidget
-from PyQt6.QtGui import QPainter, QBrush, QPen, QColor, QPainterPath
-from PyQt6.QtCore import Qt, QRectF, QMarginsF, QObject, pyqtSignal
+from PyQt6.QtCore import QObject
 
+from debug_print_mixin import DebugPrintMixin
 from color_sample import ColorSample
-from color_sample_item import ColorSampleItem
-from color_swatch_item import ColorSwatchItem
-from color_sample_link import ColorSampleLink
 
-class ColorSamples(QObject):
-    links                       = list()
-
+class ColorSamples(QObject, DebugPrintMixin):
     def __init__(self, project):
-        super().__init__()
+        QObject.__init__(self)
+        DebugPrintMixin.__init__(self)
 
         self.project = project
 
