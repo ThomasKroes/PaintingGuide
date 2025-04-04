@@ -21,7 +21,7 @@ class ColorSampleLinks(QObject, DebugPrintMixin):
         if QApplication.instance().opening_project and not force:
             return
         
-        self.print("Choose links...")
+        # self.print("Choose links...")
 
         for link in ColorSampleLink.color_sample_links:
             link.deactivate()

@@ -1,11 +1,12 @@
 import traceback
 
 from PyQt6.QtWidgets import QGraphicsEllipseItem, QGraphicsItem, QGraphicsSceneContextMenuEvent, QGraphicsWidget
-from PyQt6.QtGui import QBrush, QColor
+from PyQt6.QtGui import QBrush, QVector2D
 from PyQt6.QtCore import Qt, QPointF
 
 from graphics_widget import GraphicsWidget
 from color_sample_context_menu import ColorSampleContextMenu
+from color_swatch_item import ColorSwatchItem
 from common import *
 from styling import *
 
@@ -25,7 +26,7 @@ class ColorSampleItem(GraphicsWidget):
         self.anchor_position_scene  = QPointF()
         self.verbose                = True
         self.initialized            = False
-
+        
         self.setGeometry(self.boundingRect())
         self.setPos(self.color_sample.position)
         self.setZValue(4)
@@ -77,8 +78,32 @@ class ColorSampleItem(GraphicsWidget):
         margin  = 10
         margins = QMarginsF(margin, margin, margin, margin)
 
-        return QRectF(QPointF() - QPointF(ColorSampleItem.radius, ColorSampleItem.radius), 2 * QSizeF(ColorSampleItem.radius, ColorSampleItem.radius)).marginsAdded(margins)
+        return QRectF(QPointF(-100000, -100000), QPointF(100000, 100000))
     
+    def shape(self):
+        path = QPainterPath()
+        
+        path.addEllipse(QPointF(), ColorSampleItem.radius, ColorSampleItem.radius)
+
+        color_sample_link = self.color_sample.color_sample_link
+
+        if color_sample_link:
+            sample_anchor   = self.mapFromScene(color_sample_link.color_sample.anchor)
+            swatch_anchor   = self.mapFromScene(color_sample_link.color_swatch.anchor)
+            swatch_position = self.mapFromScene(color_sample_link.color_swatch.position)
+            v_norm          = QVector2D(swatch_anchor - sample_anchor).normalized()
+
+            path.moveTo(sample_anchor + (ColorSampleItem.radius * v_norm.toPointF()))
+            path.lineTo(swatch_anchor)
+
+            swatch_scene_size       = QSizeF(ColorSwatchItem.swatch_size, ColorSwatchItem.swatch_size)
+            half_swatch_scene_size  = QSizeF(ColorSwatchItem.swatch_size, ColorSwatchItem.swatch_size) / 2
+            swatch_scene_rect       = QRectF(swatch_position - QPointF(half_swatch_scene_size.width(), half_swatch_scene_size.height()), swatch_scene_size)
+
+            path.addRoundedRect(swatch_scene_rect, ColorSwatchItem.swatch_size / 5, ColorSwatchItem.swatch_size / 5)
+
+        return path
+
     def paint(self, painter: QPainter, option, widget=None):
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         
@@ -89,3 +114,19 @@ class ColorSampleItem(GraphicsWidget):
         painter.setBrush(Qt.BrushStyle.NoBrush)
         painter.setPen(get_item_pen(self))
         painter.drawEllipse(QPointF(), ColorSampleItem.radius, ColorSampleItem.radius)
+
+        color_sample_link = self.color_sample.color_sample_link
+
+        if color_sample_link:
+            sample_anchor   = self.mapFromScene(color_sample_link.color_sample.anchor)
+            swatch_anchor   = self.mapFromScene(color_sample_link.color_swatch.anchor)
+            swatch_position = self.mapFromScene(color_sample_link.color_swatch.position)
+            v_norm          = QVector2D(swatch_anchor - sample_anchor).normalized()
+
+            painter.drawLine(QLineF(sample_anchor + (ColorSampleItem.radius * v_norm.toPointF()), swatch_anchor))
+
+            swatch_scene_size       = QSizeF(ColorSwatchItem.swatch_size, ColorSwatchItem.swatch_size)
+            half_swatch_scene_size  = QSizeF(ColorSwatchItem.swatch_size, ColorSwatchItem.swatch_size) / 2
+            swatch_scene_rect       = QRectF(swatch_position - QPointF(half_swatch_scene_size.width(), half_swatch_scene_size.height()), swatch_scene_size)
+
+            painter.drawRoundedRect(swatch_scene_rect, ColorSwatchItem.swatch_size / 5, ColorSwatchItem.swatch_size / 5)

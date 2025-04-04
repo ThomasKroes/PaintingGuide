@@ -67,14 +67,14 @@ class ColorSampleLinkItem(GraphicsWidget):
 
         return QRectF(self.line.p1(), self.line.p2()).normalized().marginsAdded(margins)
     
-    def paint(self, painter: QPainter, option, widget=None):
-        if not self.color_sample_link.visible:
-            return
+    # def paint(self, painter: QPainter, option, widget=None):
+    #     if not self.color_sample_link.visible:
+    #         return
         
-        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+    #     painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         
-        painter.setPen(get_item_pen(self))
-        painter.drawLine(self.line)
+    #     painter.setPen(get_item_pen(self))
+    #     painter.drawLine(self.line)
 
     # def animate(self, value):
     #     self.setOpacity(value)

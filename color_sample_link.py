@@ -107,7 +107,9 @@ class ColorSampleLink(QObject, DebugPrintMixin):
             ColorSampleLink.occupied_color_swatches.append(self.color_swatch)
 
             self.color_swatch.set_color(self.color_sample.color)
-            self.color_swatch.activate()
+            self.color_swatch.activate(self)
+            self.color_sample.activate(self)
+            
             # self.color_swatch.color_swatch_item.set_selected(self.color_sample.selected)
 
     def deactivate(self):

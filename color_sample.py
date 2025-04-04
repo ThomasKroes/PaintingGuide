@@ -18,7 +18,8 @@ class ColorSample(QObject, DebugPrintMixin):
     anchor_changed      = pyqtSignal(QPointF)
     color_changed       = pyqtSignal(QColor)
     selected_changed    = pyqtSignal(bool)
-
+    active_changed      = pyqtSignal(bool)
+    
     def __init__(self, project, position=QPointF()):
         QObject.__init__(self)
         DebugPrintMixin.__init__(self)
@@ -31,6 +32,8 @@ class ColorSample(QObject, DebugPrintMixin):
         self.anchor                     = QPointF(position)
         self.color                      = QColor()
         self.selected                   = False
+        self.active                     = False
+        self.color_sample_link          = None
         self.color_sample_item          = ColorSampleItem(self)
         self.color_sample_shadow_item   = ColorSampleShadowItem(self)
         
@@ -121,6 +124,26 @@ class ColorSample(QObject, DebugPrintMixin):
         self.color_sample_item.selected = selected
 
         self.print(f"Position: { qpointf_to_string(self.position) }")
+
+    def activate(self, color_sample_link):
+        """Activate the color sample."""
+
+        self.color_sample_link = color_sample_link
+
+        if not self.active:
+            self.active = True
+
+            self.active_changed.emit(self.active)
+
+    def deactivate(self):
+        """De-activate the color sample."""
+
+        self.color_sample_link = None
+
+        if self.active:
+            self.active = False
+
+            self.active_changed.emit(self.active)
 
     def save_to_dict(self):
         """Save in dictionary."""

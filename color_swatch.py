@@ -21,6 +21,7 @@ class ColorSwatch(QObject):
         self.anchor             = QPointF()
         self.color              = QColor(40, 40, 40)
         self.active             = False
+        self.color_sample_link  = None
         self.color_swatch_item  = ColorSwatchItem(self)
 
     def __del__(self):
@@ -66,8 +67,10 @@ class ColorSwatch(QObject):
 
         self.anchor_changed.emit(self.anchor)
 
-    def activate(self):
+    def activate(self, color_sample_link):
         """Activate the color swatch."""
+
+        self.color_sample_link = color_sample_link
 
         if not self.active:
             self.active = True
@@ -76,6 +79,8 @@ class ColorSwatch(QObject):
 
     def deactivate(self):
         """De-activate the color swatch."""
+
+        self.color_sample_link = None
 
         if self.active:
             self.active = False
